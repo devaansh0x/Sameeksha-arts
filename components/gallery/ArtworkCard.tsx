@@ -1,6 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
-import { Artwork } from '@/lib/mockData'
+import { Artwork } from '@/lib/utils/mockData'
 
 interface ArtworkCardProps {
     artwork: Artwork

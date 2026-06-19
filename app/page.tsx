@@ -5,7 +5,7 @@ import ArtworkCard from '@/components/gallery/ArtworkCard'
 import Button from '@/components/ui/Button'
 import Reveal from '@/components/common/Reveal'
 import ContactForm from '@/components/gallery/ContactForm'
-import { mockArtworks, mockRecognition, mockTestimonials } from '@/lib/mockData'
+import { mockArtworks, mockRecognition, mockTestimonials } from '@/lib/utils/mockData'
 
 /** Left-aligned, offset gallery-catalogue heading for asymmetric layouts */
 function SectionHeading({

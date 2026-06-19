@@ -1,228 +1,195 @@
 import React from 'react'
-import Image from 'next/image'
 import Navigation from '@/components/gallery/Navigation'
 import Footer from '@/components/Footer'
 import ArtworkCard from '@/components/gallery/ArtworkCard'
 import Button from '@/components/ui/Button'
-import { mockArtworks } from '@/lib/mockData'
+import Reveal from '@/components/common/Reveal'
+import { mockArtworks } from '@/lib/utils/mockData'
 
 export const metadata = {
     title: 'Commissions | Sameeksha Arts',
-    description: 'Commission a custom painting. Learn about the collaborative process and explore possibilities.',
+    description: 'Commission a painting — portraits, celebrations, devotional works, and institutional pieces.',
 }
 
+const steps = [
+    {
+        n: 'I',
+        title: 'The Conversation',
+        body: 'Every commission begins with listening — to the story you want to hold, the feeling you want to live with, the occasion or person it honours.',
+    },
+    {
+        n: 'II',
+        title: 'Concept & Sketches',
+        body: 'Composition, scale, palette — explored through rough studies before a brushstroke of paint is laid. You stay close to every decision.',
+    },
+    {
+        n: 'III',
+        title: 'The Painting',
+        body: 'The slow work. Progress photographs shared at key stages. The canvas is built up in layers, with time given to each one.',
+    },
+    {
+        n: 'IV',
+        title: 'Delivery',
+        body: 'Finished, dry, and documented. Shipped with care or collected from the studio. A record of the work accompanies it.',
+    },
+]
+
+const types = [
+    { n: 'I',   t: 'Portraits',    d: 'The face held still long enough to reveal who lives behind it — individuals, couples, families.' },
+    { n: 'II',  t: 'Celebrations', d: 'Weddings, milestones, and the days a family wants to keep forever.' },
+    { n: 'III', t: 'Devotional',   d: 'Sacred subjects rendered in the old symbols and the old patience — oil or Madhubani.' },
+    { n: 'IV',  t: 'Institutional',d: 'Large-format works for corporate collections, public spaces, and institutional walls.' },
+]
+
 export default function CommissionsPage() {
-    const commissionExamples = mockArtworks.slice(0, 3)
+    const examples = mockArtworks.filter(a => a.availabilityStatus !== 'sold').slice(0, 3)
 
     return (
-        <div className="min-h-screen flex flex-col">
+        <div className="min-h-screen flex flex-col bg-primary-50">
             <Navigation />
 
-            <main className="flex-grow">
-                {/* Hero Section */}
-                <section className="py-24 md:py-32 bg-accent-50">
-                    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                        <p className="text-xs uppercase tracking-[0.3em] text-accent-700 font-medium mb-6">
-                            Commissions
-                        </p>
-                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-neutral-900 mb-8 leading-tight">
-                            Let's Create<br />Something Together
-                        </h1>
-                        <p className="text-2xl md:text-3xl font-display font-semibold text-accent-700 max-w-2xl mx-auto leading-snug mb-8">
-                            Every commission<br />
-                            begins with listening
-                        </p>
-                        <p className="text-lg text-neutral-700 font-light leading-relaxed max-w-2xl mx-auto mb-12">
-                            [Brief introduction to commissions — what makes the process special,
-                            the collaborative nature, and what clients can expect]
-                        </p>
-                        <Button href="/contact" variant="primary" size="lg">
-                            Begin the Conversation
-                        </Button>
+            <main className="flex-grow pt-24">
+
+                {/* ── Hero ── */}
+                <section className="py-16 md:py-24 bg-accent-50 paper-texture">
+                    <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
+                        <Reveal>
+                            <div className="flex items-center gap-4 mb-6">
+                                <span className="text-sm font-display italic text-accent-600" style={{ fontWeight: 500 }}>03</span>
+                                <span className="h-px w-10 bg-accent-600/40" />
+                                <span className="text-[0.65rem] uppercase tracking-[0.35em] text-accent-600" style={{ fontWeight: 500 }}>Commissions</span>
+                            </div>
+                            <h1 className="text-4xl md:text-[3.5rem] font-display text-neutral-900 tracking-tight leading-[1.05] max-w-2xl" style={{ fontWeight: 400 }}>
+                                Have a Painting Made
+                            </h1>
+                            <p className="mt-5 text-2xl font-display italic text-accent-700 max-w-xl leading-[1.3]" style={{ fontWeight: 400 }}>
+                                Every commission begins with listening.
+                            </p>
+                            <p className="mt-5 text-lg font-serif italic text-neutral-500 max-w-xl leading-relaxed">
+                                A canvas grown from your story — beginning, as always, with a conversation and no obligation.
+                            </p>
+                            <div className="mt-10">
+                                <Button href="/contact" variant="primary" size="lg">Begin the Conversation</Button>
+                            </div>
+                        </Reveal>
                     </div>
                 </section>
 
-                {/* The Approach */}
-                <section className="py-24 md:py-32 bg-white">
-                    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="text-center mb-16">
-                            <h2 className="text-3xl md:text-4xl font-display font-bold text-neutral-900 mb-8">
-                                How We'll Work Together
-                            </h2>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-4xl mx-auto">
-                            <div>
-                                <div className="text-5xl font-display text-accent-600 mb-4">I</div>
-                                <h3 className="text-2xl font-display font-semibold text-neutral-900 mb-4">
-                                    Understanding
-                                </h3>
-                                <p className="text-neutral-700 leading-relaxed font-light">
-                                    [Description of the initial consultation — conversation about vision,
-                                    purpose, emotions, and what the artwork should capture or express]
-                                </p>
+                {/* ── Process ── */}
+                <section className="py-16 md:py-24 bg-white">
+                    <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
+                        <Reveal>
+                            <div className="flex items-center gap-4 mb-12">
+                                <span className="h-px w-10 bg-accent-600/40" />
+                                <span className="text-[0.65rem] uppercase tracking-[0.35em] text-accent-600" style={{ fontWeight: 500 }}>How We'll Work Together</span>
                             </div>
+                        </Reveal>
 
-                            <div>
-                                <div className="text-5xl font-display text-accent-600 mb-4">II</div>
-                                <h3 className="text-2xl font-display font-semibold text-neutral-900 mb-4">
-                                    Development
-                                </h3>
-                                <p className="text-neutral-700 leading-relaxed font-light">
-                                    [Description of concept development — sketches, composition planning,
-                                    color exploration, and collaborative refinement]
-                                </p>
-                            </div>
-
-                            <div>
-                                <div className="text-5xl font-display text-accent-600 mb-4">III</div>
-                                <h3 className="text-2xl font-display font-semibold text-neutral-900 mb-4">
-                                    Creation
-                                </h3>
-                                <p className="text-neutral-700 leading-relaxed font-light">
-                                    [Description of the painting process — time investment, updates,
-                                    the artist's approach to bringing the vision to life]
-                                </p>
-                            </div>
-
-                            <div>
-                                <div className="text-5xl font-display text-accent-600 mb-4">IV</div>
-                                <h3 className="text-2xl font-display font-semibold text-neutral-900 mb-4">
-                                    Completion
-                                </h3>
-                                <p className="text-neutral-700 leading-relaxed font-light">
-                                    [Description of final review, delivery, and beginning the relationship
-                                    between the client and their new artwork]
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                {/* What Can Be Commissioned */}
-                <section className="py-24 md:py-32 bg-primary-50">
-                    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="text-center mb-16">
-                            <h2 className="text-3xl md:text-4xl font-display font-bold text-neutral-900 mb-4">
-                                Types of Commissions
-                            </h2>
-                            <p className="text-lg text-neutral-700 font-light max-w-2xl mx-auto">
-                                [Brief explanation of commission types available]
-                            </p>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            <div className="bg-white p-6 text-center">
-                                <div className="text-4xl mb-4">I</div>
-                                <h3 className="text-lg font-display font-semibold text-neutral-900 mb-2">
-                                    Portraits
-                                </h3>
-                                <p className="text-sm text-neutral-600 font-light">
-                                    [Brief description of portrait commissions — individuals,
-                                    families, capturing essence and personality]
-                                </p>
-                            </div>
-
-                            <div className="bg-white p-6 text-center">
-                                <div className="text-4xl mb-4">II</div>
-                                <h3 className="text-lg font-display font-semibold text-neutral-900 mb-2">
-                                    Celebrations
-                                </h3>
-                                <p className="text-sm text-neutral-600 font-light">
-                                    [Brief description of wedding/celebration art — commemorating
-                                    special moments and milestones]
-                                </p>
-                            </div>
-
-                            <div className="bg-white p-6 text-center">
-                                <div className="text-4xl mb-4">III</div>
-                                <h3 className="text-lg font-display font-semibold text-neutral-900 mb-2">
-                                    Spiritual Works
-                                </h3>
-                                <p className="text-sm text-neutral-600 font-light">
-                                    [Brief description of devotional art — creating meaningful
-                                    spiritual and meditative pieces]
-                                </p>
-                            </div>
-
-                            <div className="bg-white p-6 text-center">
-                                <div className="text-4xl mb-4">IV</div>
-                                <h3 className="text-lg font-display font-semibold text-neutral-900 mb-2">
-                                    Institutions
-                                </h3>
-                                <p className="text-sm text-neutral-600 font-light">
-                                    [Brief description of large-format works — corporate collections,
-                                    public spaces, institutional collaborations]
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                {/* Commission Examples */}
-                <section className="py-24 md:py-32 bg-white">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="text-center mb-16">
-                            <p className="text-xs uppercase tracking-[0.3em] text-accent-600 font-medium mb-4">
-                                Previous Work
-                            </p>
-                            <h2 className="text-3xl md:text-4xl font-display font-bold text-neutral-900 mb-4">
-                                Examples of<br />Commissioned Work
-                            </h2>
-                            <p className="text-lg text-neutral-700 font-light max-w-2xl mx-auto">
-                                [Brief context about past commissions]
-                            </p>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                            {commissionExamples.map((artwork) => (
-                                <ArtworkCard key={artwork.id} artwork={artwork} size="medium" />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl">
+                            {steps.map((s, i) => (
+                                <Reveal key={s.n} delay={i * 80}>
+                                    <div className="bg-primary-50 p-8 h-full border border-primary-200/60 hover:border-accent-300 hover:shadow-luxe transition-all duration-500 ease-luxe group">
+                                        <div className="text-2xl font-display italic text-accent-600 mb-4 group-hover:text-accent-700 transition-colors" style={{ fontWeight: 500 }}>{s.n}</div>
+                                        <h3 className="font-display text-neutral-900 text-lg mb-3 tracking-tight" style={{ fontWeight: 500 }}>{s.title}</h3>
+                                        <p className="text-neutral-500 text-sm font-light leading-relaxed">{s.body}</p>
+                                    </div>
+                                </Reveal>
                             ))}
                         </div>
                     </div>
                 </section>
 
-                {/* Testimonial / Quote */}
-                <section className="py-24 md:py-32 bg-primary-50">
-                    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                        <div className="text-5xl text-accent-300 mb-6">"</div>
-                        <p className="text-2xl md:text-3xl font-display font-semibold text-neutral-800 leading-snug mb-8">
-                            [A quote from the artist about the commission process —<br />
-                            what it means to create for someone, the joy of collaboration,<br />
-                            or the responsibility of capturing what matters most]
-                        </p>
-                        <p className="text-neutral-600 font-light">— [Artist Name]</p>
+                {/* ── Types ── */}
+                <section className="py-16 md:py-24 bg-primary-50 paper-texture">
+                    <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
+                        <Reveal>
+                            <div className="flex items-center gap-4 mb-4">
+                                <span className="h-px w-10 bg-accent-600/40" />
+                                <span className="text-[0.65rem] uppercase tracking-[0.35em] text-accent-600" style={{ fontWeight: 500 }}>Types of Commission</span>
+                            </div>
+                            <h2 className="text-3xl md:text-4xl font-display text-neutral-900 tracking-tight leading-[1.1] mb-12" style={{ fontWeight: 400 }}>
+                                What Can Be Made
+                            </h2>
+                        </Reveal>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                            {types.map((c, i) => (
+                                <Reveal key={c.n} delay={i * 70}>
+                                    <div className="bg-white p-8 h-full border border-primary-200/60 hover:border-accent-300 hover:shadow-luxe transition-all duration-500 ease-luxe group">
+                                        <div className="text-2xl font-display italic text-accent-600 mb-4 group-hover:text-accent-700 transition-colors" style={{ fontWeight: 500 }}>{c.n}</div>
+                                        <h3 className="font-display text-neutral-900 text-lg mb-3 tracking-tight" style={{ fontWeight: 500 }}>{c.t}</h3>
+                                        <p className="text-neutral-500 text-sm font-light leading-relaxed">{c.d}</p>
+                                    </div>
+                                </Reveal>
+                            ))}
+                        </div>
                     </div>
                 </section>
 
-                {/* Begin Your Commission CTA */}
-                <section className="py-24 md:py-32 bg-accent-700 text-white">
-                    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                        <h2 className="text-3xl md:text-4xl font-display font-bold mb-8">
-                            Ready to Begin?
-                        </h2>
-                        <p className="text-2xl md:text-3xl font-display font-semibold text-accent-100 mb-8 leading-snug">
-                            The first step is<br />
-                            simply to reach out
-                        </p>
-                        <p className="text-lg text-accent-50 mb-12 max-w-2xl mx-auto leading-relaxed font-light">
-                            [Invitation to start the conversation — no obligation, just an opportunity
-                            to discuss possibilities and see if the collaboration feels right]
-                        </p>
-                        <div className="flex flex-wrap justify-center gap-4">
-                            <a
-                                href="/contact"
-                                className="inline-flex items-center justify-center px-8 py-4 text-lg font-medium bg-white text-accent-700 rounded-lg hover:bg-primary-50 transition-colors"
-                            >
-                                Start a Conversation
-                            </a>
-                            <a
-                                href="/work"
-                                className="inline-flex items-center justify-center px-8 py-4 text-lg font-medium border-2 border-white text-white rounded-lg hover:bg-accent-800 transition-colors"
-                            >
-                                View Portfolio
-                            </a>
+                {/* ── Examples ── */}
+                <section className="py-16 md:py-24 bg-white">
+                    <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
+                        <Reveal>
+                            <div className="flex items-center gap-4 mb-4">
+                                <span className="h-px w-10 bg-accent-600/40" />
+                                <span className="text-[0.65rem] uppercase tracking-[0.35em] text-accent-600" style={{ fontWeight: 500 }}>Previous Work</span>
+                            </div>
+                            <h2 className="text-3xl md:text-4xl font-display text-neutral-900 tracking-tight leading-[1.1] mb-12" style={{ fontWeight: 400 }}>
+                                Examples of<br />
+                                <span className="italic">Commissioned Work</span>
+                            </h2>
+                        </Reveal>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {examples.map((artwork, i) => (
+                                <Reveal key={artwork.id} delay={i * 60}>
+                                    <ArtworkCard artwork={artwork} aspect="portrait" />
+                                </Reveal>
+                            ))}
                         </div>
+                    </div>
+                </section>
+
+                {/* ── Artist quote ── */}
+                <section className="py-16 md:py-20 bg-primary-800 text-white relative overflow-hidden paper-texture">
+                    <div className="absolute -top-32 -left-20 w-[32rem] h-[32rem] rounded-full bg-accent-600/15 blur-3xl" />
+                    <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 relative z-10">
+                        <Reveal>
+                            <div className="lg:max-w-2xl lg:ml-[10%]">
+                                <p className="text-3xl md:text-[2.4rem] font-display italic text-primary-50 leading-[1.4]" style={{ fontWeight: 400 }}>
+                                    "[A quote from the artist about the commission process — what it means to create
+                                    for someone, the joy of that collaboration]"
+                                </p>
+                                <div className="hairline w-16 my-8 bg-white/20" />
+                                <p className="text-accent-200/70 font-light text-sm">— Sameeksha</p>
+                            </div>
+                        </Reveal>
+                    </div>
+                </section>
+
+                {/* ── CTA ── */}
+                <section className="py-16 md:py-20 bg-accent-700 text-white relative overflow-hidden paper-texture">
+                    <div className="absolute -bottom-32 -right-20 w-[32rem] h-[32rem] rounded-full bg-accent-600/30 blur-3xl" />
+                    <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 relative z-10">
+                        <Reveal>
+                            <div className="max-w-xl">
+                                <div className="flex items-center gap-4 mb-6">
+                                    <span className="h-px w-10 bg-white/30" />
+                                    <span className="text-[0.65rem] uppercase tracking-[0.35em] text-accent-200" style={{ fontWeight: 500 }}>Ready to Begin</span>
+                                </div>
+                                <h2 className="text-3xl md:text-4xl font-display text-white leading-[1.1] tracking-tight mb-5" style={{ fontWeight: 400 }}>
+                                    The first step is simply<br />
+                                    <span className="italic">to reach out</span>
+                                </h2>
+                                <p className="text-accent-100/80 font-light leading-[1.9] mb-8 max-w-sm text-sm">
+                                    No obligation. Just a conversation about what you have in mind and whether the collaboration feels right.
+                                </p>
+                                <div className="flex flex-wrap gap-4">
+                                    <Button href="/contact" variant="secondary">Start a Conversation</Button>
+                                    <Button href="/work" variant="outline" className="border-white/40 text-white hover:bg-white/10">View Portfolio</Button>
+                                </div>
+                            </div>
+                        </Reveal>
                     </div>
                 </section>
             </main>

@@ -1,12 +1,6 @@
 // Mock data for frontend prototypes
 // This will be replaced with actual database queries later
 
-/**
- * Generates an elegant abstract colour-field as an inline SVG data URI —
- * used in place of real artwork photography during the prototype phase.
- * Two soft gradient washes plus a couple of faint orbs give each "canvas"
- * a painterly, gallery-toned feel rather than a flat block.
- */
 function swatch(from: string, to: string, orb: string): string {
     const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='900'>
 <defs>
@@ -26,7 +20,6 @@ function swatch(from: string, to: string, orb: string): string {
     return `data:image/svg+xml,${encodeURIComponent(svg)}`
 }
 
-// A curated set of warm, muted, museum-toned palettes — one per artwork.
 const palettes: Array<[string, string, string]> = [
     ['#9a7865', '#e7c4b2', '#6a5245'], // terracotta
     ['#7e8ba3', '#c3cad8', '#4f5d75'], // dusty blue
@@ -34,6 +27,12 @@ const palettes: Array<[string, string, string]> = [
     ['#8b6f86', '#d0bccb', '#5e4a5a'], // plum
     ['#c2a05c', '#ecdcae', '#917238'], // ochre
     ['#6a5245', '#a89d8a', '#3f342c'], // clay
+    ['#7a6a55', '#d4c4a8', '#5c4f3a'], // parchment
+    ['#5c7a6a', '#b8d4c4', '#3a5c4f'], // muted teal
+    ['#9a6565', '#e4b8b8', '#6a4545'], // dusty rose
+    ['#6a7a9a', '#c4d0e4', '#4a5a7a'], // slate blue
+    ['#8a7a4a', '#d4c88a', '#6a5a2a'], // antique gold
+    ['#7a5a6a', '#d0b0c0', '#5a3a4a'], // mauve
 ]
 
 export const artSwatch = (i: number) => {
@@ -41,24 +40,39 @@ export const artSwatch = (i: number) => {
     return swatch(from, to, orb)
 }
 
-// Soft portrait/studio fields (no text, just tone)
 export const portraitSwatch = swatch('#cdbfae', '#ebe4d8', '#9a7865')
 export const studioSwatch = swatch('#b3a892', '#e4ddcd', '#8d826f')
 
-export interface Artwork {
-    id: string
-    title: string
-    slug: string
-    description: string
-    story: string
-    medium: string
-    dimensions: string
-    year: number
-    availabilityStatus: 'available' | 'sold' | 'on_commission' | 'not_for_sale'
-    collectionId: string
-    collection: Collection
-    images: ArtworkImage[]
-    createdAt: string
+// ─── Tag system ──────────────────────────────────────────────────────────────
+// Tags are cross-cutting — an artwork can have multiple.
+// They cover medium, subject, style, and availability so visitors can
+// slice across collections in ways the artist didn't pre-plan.
+
+export const TAG_GROUPS = {
+    medium: {
+        label: 'Medium',
+        tags: ['Oil', 'Acrylic', 'Watercolour', 'Mixed Media', 'Ink', 'Gouache'],
+    },
+    subject: {
+        label: 'Subject',
+        tags: ['Portrait', 'Figure', 'Landscape', 'Devotional', 'Abstract', 'Flora', 'Architecture'],
+    },
+    style: {
+        label: 'Style',
+        tags: ['Madhubani', 'Realist', 'Impressionist', 'Folk', 'Contemporary'],
+    },
+    availability: {
+        label: 'Availability',
+        tags: ['Available', 'Sold', 'On Commission'],
+    },
+} as const
+
+export type TagGroup = keyof typeof TAG_GROUPS
+
+export interface ColorPalette {
+    from: string
+    to: string
+    direction?: string
 }
 
 export interface ArtworkImage {
@@ -76,6 +90,25 @@ export interface Collection {
     name: string
     slug: string
     description: string
+    coverIndex?: number // which palette to use for the cover swatch
+}
+
+export interface Artwork {
+    id: string
+    title: string
+    slug: string
+    description: string
+    story: string
+    medium: string
+    dimensions: string
+    year: number
+    availabilityStatus: 'available' | 'sold' | 'on_commission' | 'not_for_sale'
+    collectionId: string
+    collection: Collection
+    images: ArtworkImage[]
+    tags: string[]
+    colorPalette?: ColorPalette
+    createdAt: string
 }
 
 export interface Recognition {
@@ -93,189 +126,111 @@ export interface Testimonial {
     text: string
 }
 
-// Mock Collections
+// ─── Collections ─────────────────────────────────────────────────────────────
+
 export const mockCollections: Collection[] = [
     {
         id: '1',
         name: 'Portraits',
         slug: 'portraits',
-        description: 'Capturing the essence and personality of individuals through expressive portraiture.',
+        description: 'Capturing the essence and personality of individuals through expressive portraiture — from intimate studies to large-format commissions.',
+        coverIndex: 0,
     },
     {
         id: '2',
         name: 'Landscapes',
         slug: 'landscapes',
-        description: 'Natural scenes that evoke tranquility and connection with the environment.',
+        description: 'Natural scenes that evoke stillness and connection — river ghats at dusk, Himalayan light, and the quiet geometry of fields.',
+        coverIndex: 2,
     },
     {
         id: '3',
         name: 'Madhubani',
         slug: 'madhubani',
-        description: 'Traditional Indian folk art with intricate patterns and vibrant colors.',
+        description: 'Traditional Bihar folk art rendered in ink and natural pigment — gods, animals, and the stories they carry.',
+        coverIndex: 4,
     },
     {
         id: '4',
         name: 'Spiritual Works',
         slug: 'spiritual-works',
-        description: 'Art inspired by spirituality, meditation, and inner reflection.',
+        description: 'Devotional subjects drawn from Hindu and Buddhist traditions — painted slowly, with intention, as a meditative practice.',
+        coverIndex: 3,
     },
 ]
 
-// Mock Artworks
+// ─── Helper to build a mock artwork ──────────────────────────────────────────
+
+function makeArtwork(
+    id: string,
+    title: string,
+    medium: string,
+    dimensions: string,
+    year: number,
+    status: Artwork['availabilityStatus'],
+    collectionIndex: number,
+    tags: string[],
+    paletteIndex: number,
+    createdAt: string,
+): Artwork {
+    const col = mockCollections[collectionIndex]
+    const [from, to] = palettes[paletteIndex % palettes.length]
+    return {
+        id,
+        title,
+        slug: `artwork-${id}`,
+        description: '[Artwork description will be added by the artist]',
+        story: '[The story behind this artwork will be shared by the artist]',
+        medium,
+        dimensions,
+        year,
+        availabilityStatus: status,
+        collectionId: col.id,
+        collection: col,
+        tags,
+        colorPalette: { from, to, direction: 'to bottom right' },
+        images: [{
+            id,
+            url: artSwatch(paletteIndex),
+            thumbnailUrl: artSwatch(paletteIndex),
+            alt: title,
+            width: 1200,
+            height: 900,
+            isPrimary: true,
+        }],
+        createdAt,
+    }
+}
+
+// ─── Artworks — 18 entries spanning all collections and tags ─────────────────
+// Enough to show the filter system working meaningfully in the prototype.
+
 export const mockArtworks: Artwork[] = [
-    {
-        id: '1',
-        title: '[Artwork Title 1]',
-        slug: 'artwork-1',
-        description: '[Artwork description will be added by the artist]',
-        story: '[The story behind this artwork will be shared by the artist]',
-        medium: 'Oil on canvas',
-        dimensions: '24 x 36 inches',
-        year: 2024,
-        availabilityStatus: 'available',
-        collectionId: '1',
-        collection: mockCollections[0],
-        images: [
-            {
-                id: '1',
-                url: artSwatch(0),
-                thumbnailUrl: artSwatch(0),
-                alt: '[Artwork Title 1]',
-                width: 1200,
-                height: 900,
-                isPrimary: true,
-            },
-        ],
-        createdAt: '2024-01-15',
-    },
-    {
-        id: '2',
-        title: '[Artwork Title 2]',
-        slug: 'artwork-2',
-        description: '[Artwork description will be added by the artist]',
-        story: '[The story behind this artwork will be shared by the artist]',
-        medium: 'Acrylic on canvas',
-        dimensions: '30 x 40 inches',
-        year: 2024,
-        availabilityStatus: 'available',
-        collectionId: '2',
-        collection: mockCollections[1],
-        images: [
-            {
-                id: '2',
-                url: artSwatch(1),
-                thumbnailUrl: artSwatch(1),
-                alt: '[Artwork Title 2]',
-                width: 1200,
-                height: 900,
-                isPrimary: true,
-            },
-        ],
-        createdAt: '2024-02-01',
-    },
-    {
-        id: '3',
-        title: '[Artwork Title 3]',
-        slug: 'artwork-3',
-        description: '[Artwork description will be added by the artist]',
-        story: '[The story behind this artwork will be shared by the artist]',
-        medium: 'Watercolor on paper',
-        dimensions: '18 x 24 inches',
-        year: 2023,
-        availabilityStatus: 'sold',
-        collectionId: '3',
-        collection: mockCollections[2],
-        images: [
-            {
-                id: '3',
-                url: artSwatch(2),
-                thumbnailUrl: artSwatch(2),
-                alt: '[Artwork Title 3]',
-                width: 1200,
-                height: 900,
-                isPrimary: true,
-            },
-        ],
-        createdAt: '2023-11-20',
-    },
-    {
-        id: '4',
-        title: '[Artwork Title 4]',
-        slug: 'artwork-4',
-        description: '[Artwork description will be added by the artist]',
-        story: '[The story behind this artwork will be shared by the artist]',
-        medium: 'Mixed media',
-        dimensions: '36 x 48 inches',
-        year: 2024,
-        availabilityStatus: 'available',
-        collectionId: '4',
-        collection: mockCollections[3],
-        images: [
-            {
-                id: '4',
-                url: artSwatch(3),
-                thumbnailUrl: artSwatch(3),
-                alt: '[Artwork Title 4]',
-                width: 1200,
-                height: 900,
-                isPrimary: true,
-            },
-        ],
-        createdAt: '2024-03-10',
-    },
-    {
-        id: '5',
-        title: '[Artwork Title 5]',
-        slug: 'artwork-5',
-        description: '[Artwork description will be added by the artist]',
-        story: '[The story behind this artwork will be shared by the artist]',
-        medium: 'Oil on canvas',
-        dimensions: '20 x 30 inches',
-        year: 2024,
-        availabilityStatus: 'available',
-        collectionId: '1',
-        collection: mockCollections[0],
-        images: [
-            {
-                id: '5',
-                url: artSwatch(4),
-                thumbnailUrl: artSwatch(4),
-                alt: '[Artwork Title 5]',
-                width: 1200,
-                height: 900,
-                isPrimary: true,
-            },
-        ],
-        createdAt: '2024-04-05',
-    },
-    {
-        id: '6',
-        title: '[Artwork Title 6]',
-        slug: 'artwork-6',
-        description: '[Artwork description will be added by the artist]',
-        story: '[The story behind this artwork will be shared by the artist]',
-        medium: 'Acrylic on canvas',
-        dimensions: '24 x 36 inches',
-        year: 2023,
-        availabilityStatus: 'available',
-        collectionId: '2',
-        collection: mockCollections[1],
-        images: [
-            {
-                id: '6',
-                url: artSwatch(5),
-                thumbnailUrl: artSwatch(5),
-                alt: '[Artwork Title 6]',
-                width: 1200,
-                height: 900,
-                isPrimary: true,
-            },
-        ],
-        createdAt: '2023-12-15',
-    },
+    makeArtwork('1',  '[Portrait — Study in Ochre]',      'Oil on canvas',         '24 × 36 in', 2024, 'available',     0, ['Oil', 'Portrait', 'Realist'],               0,  '2024-01-15'),
+    makeArtwork('2',  '[Portrait — The Matriarch]',       'Oil on canvas',         '30 × 40 in', 2023, 'sold',          0, ['Oil', 'Portrait', 'Figure', 'Realist'],     6,  '2023-08-10'),
+    makeArtwork('3',  '[Portrait — Dusk Light]',          'Acrylic on canvas',     '20 × 24 in', 2024, 'available',     0, ['Acrylic', 'Portrait', 'Contemporary'],      9,  '2024-03-22'),
+    makeArtwork('4',  '[Portrait — Commission I]',        'Oil on canvas',         '36 × 48 in', 2023, 'on_commission', 0, ['Oil', 'Portrait', 'Figure'],                1,  '2023-11-05'),
+    makeArtwork('5',  '[Portrait — Young Scholar]',       'Watercolour on paper',  '18 × 24 in', 2022, 'sold',          0, ['Watercolour', 'Portrait', 'Realist'],       7,  '2022-06-18'),
+
+    makeArtwork('6',  '[Ganga at Varanasi]',              'Oil on canvas',         '36 × 48 in', 2024, 'available',     1, ['Oil', 'Landscape', 'Realist'],              2,  '2024-02-01'),
+    makeArtwork('7',  '[Himalayan Morning]',              'Acrylic on canvas',     '24 × 36 in', 2023, 'available',     1, ['Acrylic', 'Landscape', 'Impressionist'],    8,  '2023-07-14'),
+    makeArtwork('8',  '[Monsoon Fields]',                 'Oil on canvas',         '30 × 40 in', 2023, 'sold',          1, ['Oil', 'Landscape', 'Flora'],                5,  '2023-04-29'),
+    makeArtwork('9',  '[River Study — Twilight]',         'Watercolour on paper',  '14 × 20 in', 2022, 'available',     1, ['Watercolour', 'Landscape', 'Impressionist'],3,  '2022-09-03'),
+    makeArtwork('10', '[Old Delhi Rooftops]',             'Mixed Media',           '20 × 30 in', 2024, 'available',     1, ['Mixed Media', 'Architecture', 'Contemporary'],10, '2024-04-11'),
+
+    makeArtwork('11', '[Madhubani — Radha Krishna]',      'Ink on paper',          '18 × 24 in', 2024, 'available',     2, ['Ink', 'Madhubani', 'Folk', 'Devotional'],   4,  '2024-01-28'),
+    makeArtwork('12', '[Madhubani — Fish Motif]',         'Ink on paper',          '12 × 16 in', 2023, 'sold',          2, ['Ink', 'Madhubani', 'Folk'],                 11, '2023-10-07'),
+    makeArtwork('13', '[Madhubani — Peacock Panel]',      'Gouache on paper',      '24 × 36 in', 2023, 'available',     2, ['Gouache', 'Madhubani', 'Folk', 'Flora'],    0,  '2023-06-20'),
+    makeArtwork('14', '[Madhubani — Wedding Scene]',      'Ink on paper',          '18 × 24 in', 2022, 'not_for_sale',  2, ['Ink', 'Madhubani', 'Folk'],                 7,  '2022-03-15'),
+
+    makeArtwork('15', '[Lakshmi — Gold Study]',           'Oil on canvas',         '24 × 30 in', 2024, 'available',     3, ['Oil', 'Devotional', 'Realist'],             4,  '2024-02-14'),
+    makeArtwork('16', '[Ganesh — Ink on Black]',          'Ink on paper',          '18 × 24 in', 2023, 'available',     3, ['Ink', 'Devotional', 'Contemporary'],        6,  '2023-12-01'),
+    makeArtwork('17', '[Meditating Figure]',              'Acrylic on canvas',     '30 × 36 in', 2024, 'on_commission', 3, ['Acrylic', 'Figure', 'Devotional', 'Abstract'],2, '2024-03-05'),
+    makeArtwork('18', '[Saraswati — Classical Study]',    'Oil on canvas',         '36 × 48 in', 2022, 'sold',          3, ['Oil', 'Devotional', 'Realist'],             9,  '2022-07-22'),
 ]
 
-// Mock Recognition
+// ─── Recognition ─────────────────────────────────────────────────────────────
+
 export const mockRecognition: Recognition[] = [
     {
         id: '1',
@@ -298,91 +253,40 @@ export const mockRecognition: Recognition[] = [
         date: '2023-09-01',
         description: '[Collaboration details will be added by the artist]',
     },
+    {
+        id: '4',
+        title: '[Press Feature]',
+        type: 'press',
+        date: '2023-06-15',
+        description: '[Press details will be added by the artist]',
+    },
+    {
+        id: '5',
+        title: '[Award Title 2]',
+        type: 'award',
+        date: '2022-12-01',
+        description: '[Award details will be added by the artist]',
+    },
 ]
 
-// Mock Testimonials
+// ─── Testimonials ─────────────────────────────────────────────────────────────
+
 export const mockTestimonials: Testimonial[] = [
     {
         id: '1',
         clientName: '[Client Name]',
-        clientTitle: '[Client Title/Organization]',
-        text: '[Client testimonial will be added by the artist]',
+        clientTitle: '[Client Title / Organization]',
+        text: '[Client testimonial will be added by the artist — the experience of commissioning a work, receiving it, and living with it]',
     },
     {
         id: '2',
         clientName: '[Client Name]',
-        text: '[Client testimonial will be added by the artist]',
+        clientTitle: '[City, Country]',
+        text: '[A second testimonial — ideally from a different context, perhaps a collector rather than a commission client]',
+    },
+    {
+        id: '3',
+        clientName: '[Client Name]',
+        text: '[A third voice — perhaps an institution or gallery that has worked with the artist]',
     },
 ]
-
-// Mock Homepage Content
-export const mockHomepageContent = {
-    hero: {
-        heading: '[Artist Name]',
-        subheading: '[Artist tagline or brief introduction]',
-        artworkId: '1',
-    },
-    introduction: {
-        heading: 'About the Artist',
-        text: '[Artist introduction will be added - a compelling narrative about who Sameeksha is, her artistic journey, and what drives her work.]',
-    },
-    selectedWorks: {
-        artworkIds: ['1', '2', '3', '4', '5', '6'],
-    },
-    artistWorld: {
-        heading: 'Artistic Philosophy',
-        text: '[The artist\'s philosophy and approach to art will be described here - what inspires her, her techniques, and her artistic vision.]',
-    },
-    commissionInvitation: {
-        heading: 'Commission Your Own Artwork',
-        text: '[Information about commissioning custom artwork will be added - the types of commissions accepted and the collaborative process.]',
-    },
-    contactInvitation: {
-        heading: 'Get In Touch',
-        text: '[Contact invitation text will be added by the artist]',
-    },
-}
-
-// Mock About Content
-export const mockAboutContent = {
-    biography: '[Artist biography will be added - Sameeksha\'s background, training, artistic evolution, and personal story.]',
-    philosophy: '[Artist philosophy will be added - what art means to Sameeksha, her approach, and her vision.]',
-    studioInfo: '[Studio information will be added if applicable]',
-}
-
-// Mock Commission Content
-export const mockCommissionContent = {
-    process: {
-        heading: 'Commission Process',
-        steps: [
-            {
-                title: 'Initial Consultation',
-                description: '[Step details will be added by the artist]',
-            },
-            {
-                title: 'Concept Development',
-                description: '[Step details will be added by the artist]',
-            },
-            {
-                title: 'Creation',
-                description: '[Step details will be added by the artist]',
-            },
-            {
-                title: 'Delivery',
-                description: '[Step details will be added by the artist]',
-            },
-        ],
-    },
-    exampleArtworkIds: ['1', '2', '3'],
-    stories: [
-        {
-            id: '1',
-            title: '[Commission Story Title]',
-            text: '[Story about a commission project will be added by the artist]',
-        },
-    ],
-    invitation: {
-        heading: 'Begin Your Commission',
-        text: '[Commission invitation text will be added by the artist]',
-    },
-}
