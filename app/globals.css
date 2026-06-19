@@ -1,0 +1,310 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-primary-50 text-neutral-900 antialiased;
+    font-weight: 300;
+    letter-spacing: 0.01em;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-display;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+
+  p,
+  li {
+    @apply leading-relaxed;
+    font-weight: 300;
+  }
+
+  section {
+    @apply scroll-mt-24;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Refined text selection */
+  ::selection {
+    background: rgba(154, 120, 101, 0.22);
+    color: #1a1a1a;
+  }
+}
+
+@layer components {
+
+  /* Elegant section eyebrow label */
+  .eyebrow {
+    @apply text-[0.7rem] uppercase tracking-[0.35em] text-accent-600 font-medium;
+  }
+
+  /* Thin divider line */
+  .hairline {
+    @apply h-px bg-accent-600/30;
+  }
+
+  /* Gold gradient text */
+  .text-gold {
+    background: linear-gradient(120deg, #9a7865 0%, #d4a890 40%, #9a7865 80%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Luxe glass card */
+  .glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+  }
+
+  /* Shimmering underline link */
+  .link-underline {
+    position: relative;
+  }
+
+  .link-underline::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    width: 100%;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .link-underline:hover::after {
+    transform: scaleX(1);
+  }
+
+  /* Custom scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-primary-100;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-primary-400 rounded-full;
+  }
+}
+
+@layer utilities {
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  /* Letterpress shadow for light text on dark */
+  .letterpress {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  }
+
+  /* ── Glow & shadow text treatments ───────────────────────────── */
+
+  /* Warm gold bloom — best on dark backgrounds */
+  .glow-gold {
+    text-shadow: 0 0 18px rgba(212, 168, 144, 0.45), 0 0 3px rgba(212, 168, 144, 0.35);
+  }
+
+  /* Gentle breathing glow for the hero accent */
+  .animate-glow {
+    animation: glow-pulse 5s ease-in-out infinite;
+  }
+
+  @keyframes glow-pulse {
+
+    0%,
+    100% {
+      text-shadow: 0 0 16px rgba(212, 168, 144, 0.30), 0 0 2px rgba(212, 168, 144, 0.25);
+    }
+
+    50% {
+      text-shadow: 0 0 30px rgba(212, 168, 144, 0.60), 0 0 6px rgba(212, 168, 144, 0.40);
+    }
+  }
+
+  /* Background-aware hover: blooms on dark, deepens to a soft shadow on light */
+  .hover-glow-dark {
+    transition: text-shadow 0.55s cubic-bezier(0.22, 1, 0.36, 1), color 0.4s ease;
+  }
+
+  .hover-glow-dark:hover {
+    text-shadow: 0 0 22px rgba(231, 196, 178, 0.65), 0 0 6px rgba(231, 196, 178, 0.4);
+  }
+
+  .hover-shadow-light {
+    transition: text-shadow 0.55s cubic-bezier(0.22, 1, 0.36, 1), color 0.4s ease;
+  }
+
+  .hover-shadow-light:hover {
+    text-shadow: 0 8px 22px rgba(106, 82, 69, 0.30), 0 2px 4px rgba(106, 82, 69, 0.18);
+  }
+
+  /* Soft glow ring for interactive elements (cards, buttons) on dark */
+  .ring-glow {
+    transition: box-shadow 0.6s cubic-bezier(0.22, 1, 0.36, 1), transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .ring-glow:hover {
+    box-shadow: 0 0 40px -4px rgba(212, 168, 144, 0.5), 0 0 0 1px rgba(212, 168, 144, 0.3);
+  }
+
+  /* Paper texture overlay */
+  .paper-texture {
+    position: relative;
+  }
+
+  .paper-texture::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .scrollbar-stable {
+    scrollbar-gutter: stable;
+  }
+}
+
+/* Site-wide scroll progress bar */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  width: 0;
+  background: linear-gradient(90deg, #9a7865, #d4a890);
+  z-index: 9999;
+  transform-origin: left;
+  will-change: width;
+}
+
+/* ───────────────────────── DARK MODE ─────────────────────────
+   A warm, low-glare "after-hours gallery" palette. Surfaces shift to
+   deep umber-blacks, text to a soft parchment, borders to faint warm
+   lines. Smooth cross-fade when toggling. */
+
+html.dark body {
+  background-color: #15120f;
+  color: #e8e1d4;
+}
+
+/* Gentle transition on the big surfaces when switching themes */
+html.dark .bg-white,
+html.dark .bg-primary-50,
+html.dark .bg-primary-100,
+html.dark .bg-accent-50,
+.bg-white,
+.bg-primary-50,
+.bg-primary-100,
+.bg-accent-50 {
+  transition: background-color 0.6s cubic-bezier(0.22, 1, 0.36, 1), color 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Backgrounds */
+html.dark .bg-white {
+  background-color: #211b16;
+}
+
+html.dark .bg-primary-50 {
+  background-color: #15120f;
+}
+
+html.dark .bg-primary-50\/85 {
+  background-color: rgba(21, 18, 15, 0.85);
+}
+
+html.dark .bg-primary-50\/98 {
+  background-color: rgba(21, 18, 15, 0.98);
+}
+
+html.dark .bg-primary-50\/60 {
+  background-color: rgba(33, 27, 22, 0.6);
+}
+
+html.dark .bg-primary-100 {
+  background-color: #1b1612;
+}
+
+html.dark .bg-accent-50 {
+  background-color: #241c15;
+}
+
+html.dark .bg-accent-50\/40 {
+  background-color: rgba(36, 28, 21, 0.5);
+}
+
+/* Text */
+html.dark .text-neutral-900 {
+  color: #ece5d8;
+}
+
+html.dark .text-neutral-800 {
+  color: #ddd4c5;
+}
+
+html.dark .text-neutral-700 {
+  color: #cec5b4;
+}
+
+html.dark .text-neutral-600 {
+  color: #b3a997;
+}
+
+html.dark .text-neutral-500 {
+  color: #968c7b;
+}
+
+html.dark .text-neutral-400 {
+  color: #7c7466;
+}
+
+/* Borders & dividers */
+html.dark [class*="border-primary-200"] {
+  border-color: rgba(231, 196, 178, 0.12);
+}
+
+html.dark .divide-primary-200\/70> :not([hidden])~ :not([hidden]) {
+  border-color: rgba(231, 196, 178, 0.12);
+}
+
+html.dark [class*="border-accent-200"] {
+  border-color: rgba(212, 168, 144, 0.32);
+}
+
+html.dark [class*="border-accent-300"] {
+  border-color: rgba(212, 168, 144, 0.4);
+}
+
+/* Keep the warm accent sections rich rather than washed out */
+html.dark .bg-accent-700 {
+  background-color: #6a5245;
+}
+
+html.dark .bg-primary-800 {
+  background-color: #1f1813;
+}

@@ -1,0 +1,63 @@
+{
+  "name": "sameeksha-arts",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
+    "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:cloudinary": "tsx scripts/test-cloudinary.ts",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:migrate:prod": "prisma migrate deploy",
+    "db:push": "prisma db push",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:studio": "prisma studio",
+    "db:reset": "prisma migrate reset",
+    "db:setup": "npm run db:generate && npm run db:push && npm run db:seed",
+    "db:pull": "prisma db pull",
+    "db:test": "tsx lib/db-test.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^7.8.0",
+    "argon2": "^0.44.0",
+    "cloudinary": "^2.10.0",
+    "next": "^14.2.0",
+    "next-auth": "^4.24.14",
+    "nodemailer": "7.0.13",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "sharp": "^0.35.1",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@jest/globals": "^30.4.1",
+    "@types/argon2": "^0.14.1",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^20",
+    "@types/nodemailer": "8.0.1",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10.0.1",
+    "eslint": "^8",
+    "eslint-config-next": "^14.2.0",
+    "eslint-config-prettier": "^10.1.8",
+    "jest": "^30.4.2",
+    "postcss": "^8",
+    "prettier": "^3.8.4",
+    "prisma": "^7.8.0",
+    "tailwindcss": "^3.4.0",
+    "ts-jest": "^29.4.11",
+    "tsx": "^4.22.4",
+    "typescript": "^5"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  }
+}
