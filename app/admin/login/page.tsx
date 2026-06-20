@@ -1,120 +1,82 @@
-"use client";
+'use client'
 
-/**
- * Admin Login Page
- * 
- * Provides authentication interface for accessing the Artist Dashboard.
- * This page is excluded from middleware protection.
- * 
- * Requirements: 9.1, 9.2, 9.3
- */
-
-import { signIn } from "next-auth/react";
-import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import React, { useState } from 'react'
+import Link from 'next/link'
+import { signIn } from 'next-auth/react'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 export default function AdminLogin() {
-    const router = useRouter();
-    const searchParams = useSearchParams();
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [error, setError] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
+    const router = useRouter()
+    const searchParams = useSearchParams()
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
+    const [error, setError] = useState('')
+    const [isLoading, setIsLoading] = useState(false)
 
     const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError("");
-        setIsLoading(true);
-
+        e.preventDefault()
+        setError('')
+        setIsLoading(true)
         try {
-            const result = await signIn("credentials", {
-                email,
-                password,
-                redirect: false,
-            });
-
+            const result = await signIn('credentials', { email, password, redirect: false })
             if (result?.error) {
-                setError("Invalid email or password");
-                setIsLoading(false);
+                setError('Invalid email or password')
+                setIsLoading(false)
             } else {
-                // Successful login - redirect to admin dashboard or callback URL
-                const callbackUrl = searchParams.get("callbackUrl") || "/admin";
-                router.push(callbackUrl);
-                router.refresh();
+                const callbackUrl = searchParams.get('callbackUrl') || '/admin'
+                router.push(callbackUrl)
+                router.refresh()
             }
-        } catch (err) {
-            setError("An error occurred during login");
-            setIsLoading(false);
+        } catch {
+            setError('An error occurred during login')
+            setIsLoading(false)
         }
-    };
+    }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full space-y-8">
-                <div>
-                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                        Admin Login
-                    </h2>
-                    <p className="mt-2 text-center text-sm text-gray-600">
-                        Sign in to access the Artist Dashboard
-                    </p>
-                </div>
+        <div className="min-h-screen flex items-center justify-center bg-neutral-900 px-4">
+            <div className="w-full max-w-sm bg-white p-8">
+                <p className="text-xs uppercase tracking-[0.3em] text-neutral-400 mb-2 font-light" style={{ fontWeight: 500 }}>
+                    Artist Dashboard
+                </p>
+                <h1 className="text-2xl font-display italic text-neutral-900 mb-8" style={{ fontWeight: 500 }}>
+                    Sameeksha Arts
+                </h1>
 
-                <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} className="space-y-4">
                     {error && (
-                        <div className="rounded-md bg-red-50 p-4">
-                            <p className="text-sm text-red-800">{error}</p>
+                        <div className="bg-red-50 border border-red-200 px-3 py-2.5">
+                            <p className="text-sm text-red-700 font-light">{error}</p>
                         </div>
                     )}
-
-                    <div className="rounded-md shadow-sm -space-y-px">
-                        <div>
-                            <label htmlFor="email" className="sr-only">
-                                Email address
-                            </label>
-                            <input
-                                id="email"
-                                name="email"
-                                type="email"
-                                autoComplete="email"
-                                required
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                placeholder="Email address"
-                                disabled={isLoading}
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="password" className="sr-only">
-                                Password
-                            </label>
-                            <input
-                                id="password"
-                                name="password"
-                                type="password"
-                                autoComplete="current-password"
-                                required
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                                placeholder="Password"
-                                disabled={isLoading}
-                            />
-                        </div>
-                    </div>
-
                     <div>
-                        <button
-                            type="submit"
-                            disabled={isLoading}
-                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400 disabled:cursor-not-allowed"
-                        >
-                            {isLoading ? "Signing in..." : "Sign in"}
+                        <label htmlFor="email" className="block text-xs uppercase tracking-[0.2em] text-neutral-400 mb-1.5 font-light" style={{ fontWeight: 500 }}>Email</label>
+                        <input id="email" name="email" type="email" autoComplete="email" required
+                            value={email} onChange={e => setEmail(e.target.value)} disabled={isLoading}
+                            className="admin-input" placeholder="admin@sameekshaarts.com" />
+                    </div>
+                    <div>
+                        <label htmlFor="password" className="block text-xs uppercase tracking-[0.2em] text-neutral-400 mb-1.5 font-light" style={{ fontWeight: 500 }}>Password</label>
+                        <input id="password" name="password" type="password" autoComplete="current-password" required
+                            value={password} onChange={e => setPassword(e.target.value)} disabled={isLoading}
+                            className="admin-input" placeholder="••••••••" />
+                    </div>
+                    <div className="pt-2">
+                        <button type="submit" disabled={isLoading}
+                            className="w-full py-2.5 px-4 bg-accent-700 text-white text-sm font-light hover:bg-accent-800 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+                            {isLoading && <svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>}
+                            {isLoading ? 'Signing in…' : 'Sign In'}
                         </button>
                     </div>
                 </form>
+
+                <div className="mt-8 pt-6 border-t border-neutral-100 text-center">
+                    <Link href="/" className="text-xs text-neutral-400 hover:text-neutral-600 font-light transition-colors">
+                        ← Back to website
+                    </Link>
+                </div>
             </div>
+            <style>{`.admin-input { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #e5e5e5; font-size: 0.875rem; font-weight: 300; color: #1a1a1a; background: white; outline: none; } .admin-input:focus { border-color: #9a7865; }`}</style>
         </div>
-    );
+    )
 }
