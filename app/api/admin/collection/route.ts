@@ -12,15 +12,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getSession } from '@/lib/auth';
 import prisma from '@/lib/database/prisma';
+import { generateBaseSlug } from '@/lib/utils/slugify'
 
 // ============================================================================
 // Input Schema
 // ============================================================================
 
-/**
- * Schema for creating a collection via POST.
- * Slug is auto-generated from the name, so it is not accepted as input.
- */
 const createCollectionSchema = z.object({
     name: z
         .string()
@@ -31,24 +28,6 @@ const createCollectionSchema = z.object({
         .min(10, 'Description must be at least 10 characters')
         .max(2000, 'Description must not exceed 2000 characters'),
 });
-
-// ============================================================================
-// Slug Helpers
-// ============================================================================
-
-/**
- * Generate a URL-safe slug from a collection name.
- * Converts to lowercase, replaces spaces with hyphens, strips special characters.
- */
-export function generateBaseSlug(name: string): string {
-    return name
-        .toLowerCase()
-        .trim()
-        .replace(/\s+/g, '-')         // spaces → hyphens
-        .replace(/[^a-z0-9-]/g, '')   // strip anything not a-z, 0-9, or hyphen
-        .replace(/-+/g, '-')          // collapse consecutive hyphens
-        .replace(/^-|-$/g, '');       // trim leading/trailing hyphens
-}
 
 /**
  * Ensure the slug is unique within the Collection table.

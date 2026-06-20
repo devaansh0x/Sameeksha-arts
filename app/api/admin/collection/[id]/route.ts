@@ -14,7 +14,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { getSession } from '@/lib/auth';
 import prisma from '@/lib/database/prisma';
-import { generateBaseSlug } from '@/app/api/admin/collection/route';
+import { generateBaseSlug } from '@/lib/utils/slugify'
 
 // ============================================================================
 // Input Schema

@@ -79,7 +79,7 @@ export async function PUT(
         //    - Update the Artwork record
         //    - Delete all existing ArtworkImage records
         //    - Re-create ArtworkImage records from the new imageIds array
-        const artwork = await prisma.$transaction(async (tx) => {
+        const artwork = await prisma.$transaction(async (tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0]) => {
             // Update the artwork record
             const updated = await tx.artwork.update({
                 where: { id },

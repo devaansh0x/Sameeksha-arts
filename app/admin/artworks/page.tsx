@@ -23,7 +23,7 @@ export default function ArtworksPage() {
     const collections = useMemo(() => {
         const seen = new Map<string, string>()
         adminArtworks.forEach(a => { if (a.collection) seen.set(a.collection.id, a.collection.name) })
-        return [...seen.entries()]
+        return Array.from(seen.entries())
     }, [])
 
     const filtered = useMemo(() => {

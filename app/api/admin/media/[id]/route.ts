@@ -133,15 +133,9 @@ export async function DELETE(
 
 /**
  * Extract the Cloudinary public_id from a full Cloudinary URL.
- *
- * Examples:
- *   https://res.cloudinary.com/demo/image/upload/v1234567890/folder/image.jpg
- *   → "folder/image"
- *
- *   https://res.cloudinary.com/demo/image/upload/w_150,f_auto/sameeksha-arts/artwork/photo.jpg
- *   → "sameeksha-arts/artwork/photo"
+ * Moved here from route file — Next.js route files cannot export non-handler functions.
  */
-export function extractCloudinaryPublicId(url: string): string | null {
+function extractCloudinaryPublicId(url: string): string | null {
     if (!url) return null;
 
     try {

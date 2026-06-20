@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
         const data = parseResult.data;
 
         // Create Artwork record and ArtworkImage join records in a transaction
-        const artwork = await prisma.$transaction(async (tx) => {
+        const artwork = await prisma.$transaction(async (tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0]) => {
             // Create the artwork
             const created = await tx.artwork.create({
                 data: {

@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import AdminLayout from '@/components/admin/AdminLayout'
-import { adminArtworks, adminCollections, adminDashboardStats } from '@/lib/admin/mockAdminData'
+import { adminArtworks, adminCollections, adminDashboardStats, AdminArtwork } from '@/lib/admin/mockAdminData'
 
 const TAG_OPTIONS = ['Oil', 'Acrylic', 'Watercolour', 'Ink', 'Gouache', 'Mixed Media', 'Portrait', 'Figure', 'Landscape', 'Devotional', 'Abstract', 'Flora', 'Architecture', 'Madhubani', 'Realist', 'Impressionist', 'Folk', 'Contemporary']
 
@@ -117,7 +117,7 @@ export default function EditArtworkPage({ params }: { params: { id: string } }) 
                     <div className="space-y-5">
                         <div className="bg-white border border-neutral-200 p-5 space-y-4">
                             <p className="text-xs uppercase tracking-[0.2em] text-neutral-400 font-light" style={{ fontWeight: 500 }}>Status</p>
-                            <select value={form.availabilityStatus} onChange={e => set('availabilityStatus', e.target.value)} className="admin-input">
+                            <select value={form.availabilityStatus} onChange={e => set('availabilityStatus', e.target.value as AdminArtwork['availabilityStatus'])} className="admin-input">
                                 {Object.entries(statusLabel).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                             </select>
                             <label className="flex items-center gap-2 cursor-pointer">
