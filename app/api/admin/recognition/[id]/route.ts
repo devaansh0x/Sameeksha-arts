@@ -139,9 +139,44 @@ export async function POST() {
     );
 }
 
-export async function DELETE() {
-    return NextResponse.json(
-        { success: false, error: 'Method not allowed. Use PUT to update a recognition entry.' },
-        { status: 405 }
-    );
+/**
+ * DELETE /api/admin/recognition/[id]
+ * Delete a recognition entry.
+ * Requirements: 13.6 — Task 9.3
+ */
+export async function DELETE(
+    _request: NextRequest,
+    { params }: { params: { id: string } }
+) {
+    try {
+        const session = await getSession();
+        if (!session || !session.user) {
+            return NextResponse.json(
+                { success: false, error: 'Unauthorized.' },
+                { status: 401 }
+            );
+        }
+
+        const { id } = params;
+
+        const existing = await prisma.recognition.findUnique({ where: { id }, select: { id: true } });
+        if (!existing) {
+            return NextResponse.json(
+                { success: false, error: 'Recognition entry not found.' },
+                { status: 404 }
+            );
+        }
+
+        await prisma.recognition.delete({ where: { id } });
+
+        try { revalidatePath('/recognition'); } catch { /* non-fatal */ }
+
+        return NextResponse.json({ success: true, message: 'Recognition entry deleted.' }, { status: 200 });
+    } catch (error) {
+        console.error('Error in DELETE /api/admin/recognition/[id]:', error);
+        return NextResponse.json(
+            { success: false, error: 'An unexpected error occurred.' },
+            { status: 500 }
+        );
+    }
 }

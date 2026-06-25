@@ -15,6 +15,7 @@ export default function InquiriesPage() {
     const [inquiries, setInquiries] = useState<AdminInquiry[]>(adminInquiries)
     const [tab, setTab] = useState<Tab>('ALL')
     const [expandedId, setExpandedId] = useState<string | null>(null)
+    const [error, setError] = useState<string | null>(null)
 
     const unreadCount = inquiries.filter(i => i.status === 'UNREAD').length
 
@@ -23,13 +24,37 @@ export default function InquiriesPage() {
         return i.status === tab
     })
 
-    function markRead(id: string) {
-        setInquiries(prev => prev.map(i => i.id === id ? { ...i, status: 'READ' as const } : i))
+    async function markRead(id: string) {
+        setError(null)
+        try {
+            const res = await fetch(`/api/admin/inquiries/${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'READ' }),
+            })
+            const data = await res.json()
+            if (!data.success) { setError(data.error ?? 'An error occurred.'); return }
+            setInquiries(prev => prev.map(i => i.id === id ? { ...i, status: 'READ' as const } : i))
+        } catch {
+            setError('Network error. Please try again.')
+        }
     }
 
-    function markArchived(id: string) {
-        setInquiries(prev => prev.map(i => i.id === id ? { ...i, status: 'ARCHIVED' as const } : i))
-        if (expandedId === id) setExpandedId(null)
+    async function markArchived(id: string) {
+        setError(null)
+        try {
+            const res = await fetch(`/api/admin/inquiries/${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'ARCHIVED' }),
+            })
+            const data = await res.json()
+            if (!data.success) { setError(data.error ?? 'An error occurred.'); return }
+            setInquiries(prev => prev.map(i => i.id === id ? { ...i, status: 'ARCHIVED' as const } : i))
+            if (expandedId === id) setExpandedId(null)
+        } catch {
+            setError('Network error. Please try again.')
+        }
     }
 
     const tabs: { id: Tab; label: string }[] = [
@@ -46,6 +71,13 @@ export default function InquiriesPage() {
                     <h1 className="text-2xl font-display text-neutral-900 tracking-tight" style={{ fontWeight: 500 }}>Inquiries</h1>
                     <p className="text-sm text-neutral-500 font-light mt-0.5">{unreadCount} unread</p>
                 </div>
+
+                {error && (
+                    <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200">
+                        <svg className="w-4 h-4 text-red-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /></svg>
+                        <p className="text-xs text-red-700 font-light">{error}</p>
+                    </div>
+                )}
 
                 {/* Tabs */}
                 <div className="flex gap-1 border-b border-neutral-200">

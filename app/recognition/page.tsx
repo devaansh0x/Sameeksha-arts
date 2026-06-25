@@ -3,26 +3,55 @@ import Navigation from '@/components/gallery/Navigation'
 import Footer from '@/components/Footer'
 import Reveal from '@/components/common/Reveal'
 import Button from '@/components/ui/Button'
+import { getAllPublishedRecognition } from '@/lib/data/gallery'
 import { mockRecognition } from '@/lib/utils/mockData'
+import type { Recognition } from '@/lib/utils/mockData'
+
+export const revalidate = 60
 
 export const metadata = {
     title: 'Recognition | Sameeksha Arts',
     description: 'Awards, exhibitions, institutional collaborations, and press.',
 }
 
+// Both uppercase (DB) and lowercase (mock) keys are handled
 const typeLabel: Record<string, string> = {
-    award:                      'Award',
-    exhibition:                 'Exhibition',
-    institutional_collaboration:'Collaboration',
-    press:                      'Press',
+    award:                          'Award',
+    AWARD:                          'Award',
+    exhibition:                     'Exhibition',
+    EXHIBITION:                     'Exhibition',
+    institutional_collaboration:    'Collaboration',
+    INSTITUTIONAL_COLLABORATION:    'Collaboration',
+    press:                          'Press',
+    PRESS:                          'Press',
 }
 
-// Group recognition entries by type for the sectioned layout
 const typeOrder = ['award', 'exhibition', 'institutional_collaboration', 'press'] as const
 
-export default function RecognitionPage() {
-    const grouped = typeOrder.reduce<Record<string, typeof mockRecognition>>((acc, type) => {
-        const items = mockRecognition.filter(r => r.type === type)
+/** Normalise DB Recognition to the shape the UI expects. */
+function normaliseRecognition(r: Awaited<ReturnType<typeof getAllPublishedRecognition>>[number]): Recognition {
+    return {
+        id: r.id,
+        title: r.title,
+        // Normalise DB uppercase enum to lowercase so typeOrder matching works
+        type: r.type.toLowerCase() as Recognition['type'],
+        date: r.date instanceof Date ? r.date.toISOString() : String(r.date),
+        description: r.description,
+    }
+}
+
+export default async function RecognitionPage() {
+    let recognition: Recognition[] = mockRecognition
+
+    try {
+        const dbRecognition = await getAllPublishedRecognition()
+        if (dbRecognition.length > 0) recognition = dbRecognition.map(normaliseRecognition)
+    } catch {
+        // DB unavailable — use mock fallback silently
+    }
+
+    const grouped = typeOrder.reduce<Record<string, Recognition[]>>((acc, type) => {
+        const items = recognition.filter(r => r.type === type)
         if (items.length > 0) acc[type] = items
         return acc
     }, {})
@@ -60,7 +89,7 @@ export default function RecognitionPage() {
 
                         {/* All entries — single list matching homepage style */}
                         <div className="divide-y divide-primary-200/70 border-y border-primary-200/70">
-                            {mockRecognition.map((item, i) => (
+                            {recognition.map((item, i) => (
                                 <Reveal key={item.id} delay={i * 40}>
                                     <div className="group flex flex-col md:flex-row md:items-center justify-between py-7 px-2 hover:px-6 hover:bg-primary-50/60 transition-all duration-500 ease-luxe">
                                         <div className="flex items-start gap-5 flex-grow mb-4 md:mb-0 md:pr-8">

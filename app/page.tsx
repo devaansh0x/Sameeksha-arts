@@ -5,7 +5,73 @@ import ArtworkCard from '@/components/gallery/ArtworkCard'
 import Button from '@/components/ui/Button'
 import Reveal from '@/components/common/Reveal'
 import ContactForm from '@/components/gallery/ContactForm'
+import {
+    getAllPublishedArtworks,
+    getAllPublishedRecognition,
+    getAllPublishedTestimonials,
+    getPageContent,
+} from '@/lib/data/gallery'
 import { mockArtworks, mockRecognition, mockTestimonials } from '@/lib/utils/mockData'
+import type { Artwork, Recognition, Testimonial } from '@/lib/utils/mockData'
+
+export const revalidate = 60
+
+/** Normalise a DB Artwork row to the shape ArtworkCard expects. */
+function normaliseArtwork(a: Awaited<ReturnType<typeof getAllPublishedArtworks>>[number]): Artwork {
+    return {
+        id: a.id,
+        title: a.title,
+        slug: a.slug,
+        description: a.description,
+        story: a.story,
+        medium: a.medium,
+        dimensions: a.dimensions,
+        year: a.year,
+        availabilityStatus: a.availabilityStatus.toLowerCase() as Artwork['availabilityStatus'],
+        collectionId: a.collectionId ?? '',
+        collection: a.collection
+            ? {
+                id: a.collection.id,
+                name: a.collection.name,
+                slug: a.collection.slug,
+                description: a.collection.description,
+            }
+            : { id: '', name: '', slug: '', description: '' },
+        images: a.images.map(img => ({
+            id: img.id,
+            url: img.mediaAsset.originalUrl,
+            thumbnailUrl: img.mediaAsset.thumbnailUrl,
+            alt: a.title,
+            width: img.mediaAsset.width,
+            height: img.mediaAsset.height,
+            isPrimary: img.isPrimary,
+        })),
+        tags: [],
+        colorPalette: undefined,
+        createdAt: a.createdAt.toISOString(),
+    }
+}
+
+/** Normalise a DB Recognition row. */
+function normaliseRecognition(r: Awaited<ReturnType<typeof getAllPublishedRecognition>>[number]): Recognition {
+    return {
+        id: r.id,
+        title: r.title,
+        type: r.type.toLowerCase() as Recognition['type'],
+        date: r.date instanceof Date ? r.date.toISOString() : String(r.date),
+        description: r.description,
+    }
+}
+
+/** Normalise a DB Testimonial row. */
+function normaliseTestimonial(t: Awaited<ReturnType<typeof getAllPublishedTestimonials>>[number]): Testimonial {
+    return {
+        id: t.id,
+        clientName: t.clientName,
+        clientTitle: t.clientTitle ?? undefined,
+        text: t.text,
+    }
+}
 
 /** Left-aligned, offset gallery-catalogue heading for asymmetric layouts */
 function SectionHeading({
@@ -49,9 +115,49 @@ function SectionHeading({
     )
 }
 
-export default function HomePage() {
-    const featuredArtwork = mockArtworks[0]
-    const works = mockArtworks.slice(0, 6)
+export default async function HomePage() {
+    // ── Data fetching with mock fallbacks ──────────────────────────────────────
+    let artworks: Artwork[] = mockArtworks
+    let recognition: Recognition[] = mockRecognition
+    let testimonials: Testimonial[] = mockTestimonials
+    let heroHeading: React.ReactNode = (
+        <>
+            Where pigment
+            <br />
+            <span className="italic text-gold glow-gold animate-glow ml-10 md:ml-20">remembers</span>
+            <br />
+            <span className="italic font-light">what words forget</span>
+        </>
+    )
+    let heroSubheading =
+        'A Delhi studio where Madhubani lineage meets the slow patience of oil — each canvas a quiet conversation between the sitter, the season, and the light that holds them.'
+
+    try {
+        const [dbArtworks, dbRecognition, dbTestimonials, pageContent] = await Promise.all([
+            getAllPublishedArtworks(),
+            getAllPublishedRecognition(),
+            getAllPublishedTestimonials(),
+            getPageContent('homepage'),
+        ])
+        if (dbArtworks.length > 0) artworks = dbArtworks.map(normaliseArtwork)
+        if (dbRecognition.length > 0) recognition = dbRecognition.map(normaliseRecognition)
+        if (dbTestimonials.length > 0) testimonials = dbTestimonials.map(normaliseTestimonial)
+
+        // Override hero text from CMS if available
+        if (pageContent && typeof pageContent === 'object') {
+            const content = pageContent as Record<string, unknown>
+            if (content.hero && typeof content.hero === 'object') {
+                const hero = content.hero as Record<string, unknown>
+                if (typeof hero.heading === 'string') heroHeading = hero.heading
+                if (typeof hero.subheading === 'string') heroSubheading = hero.subheading
+            }
+        }
+    } catch {
+        // DB unavailable — use mock fallback silently
+    }
+
+    const featuredArtwork = artworks[0]
+    const works = artworks.slice(0, 6)
 
     return (
         <div className="min-h-screen flex flex-col bg-primary-50 overflow-x-hidden">
@@ -91,15 +197,10 @@ export default function HomePage() {
                                 <span className="text-[0.65rem] uppercase tracking-[0.4em] text-white/75 letterpress" style={{ fontWeight: 500 }}>Paintings &amp; Commissions</span>
                             </div>
                             <h1 className="text-5xl md:text-7xl lg:text-[5.75rem] font-display text-white mb-10 leading-[1.02] tracking-[-0.01em] letterpress animate-fade-up" style={{ fontWeight: 400, animationDelay: '120ms' }}>
-                                Where pigment
-                                <br />
-                                <span className="italic text-gold glow-gold animate-glow ml-10 md:ml-20">remembers</span>
-                                <br />
-                                <span className="italic font-light">what words forget</span>
+                                {heroHeading}
                             </h1>
                             <p className="text-lg md:text-xl text-white/80 max-w-xl font-serif leading-[1.7] mb-12 animate-fade-up md:ml-10" style={{ fontWeight: 300, animationDelay: '300ms' }}>
-                                A Delhi studio where Madhubani lineage meets the slow patience of oil — each canvas
-                                a quiet conversation between the sitter, the season, and the light that holds them.
+                                {heroSubheading}
                             </p>
                             <div className="flex flex-wrap gap-4 animate-fade-up md:ml-10" style={{ animationDelay: '440ms' }}>
                                 <Button href="#work" size="lg" variant="primary">Explore the work</Button>
@@ -109,7 +210,6 @@ export default function HomePage() {
                             </div>
                         </div>
                     </div>
-
                 </section>
 
                 {/* ───────────────────────── THE ARTIST (asymmetric 5/7) ───────────────────────── */}
@@ -121,9 +221,7 @@ export default function HomePage() {
                                 <div className="relative aspect-[3/4] max-h-[420px] overflow-hidden shadow-luxe" style={{
                                     background: 'linear-gradient(135deg, #d4a574 0%, #9b7653 100%)',
                                 }}>
-                                    {/* Decorative inner border */}
                                     <span className="pointer-events-none absolute inset-5 border border-white/30" />
-                                    {/* Placeholder label */}
                                     <div className="absolute inset-0 flex items-center justify-center">
                                         <p className="text-white/50 text-xs uppercase tracking-[0.25em] font-light">Artist portrait</p>
                                     </div>
@@ -166,7 +264,7 @@ export default function HomePage() {
                                     <Button href="#work" variant="outline">See the work</Button>
                                 </div>
 
-                                {/* Stats — no staggered Reveal inside parent Reveal to avoid invisible gaps */}
+                                {/* Stats */}
                                 <div className="flex flex-wrap gap-x-12 gap-y-6 pt-10 mt-4 border-t border-primary-200">
                                     {[
                                         { n: '12+', l: 'Years at the easel' },
@@ -185,7 +283,7 @@ export default function HomePage() {
                     </div>
                 </section>
 
-                {/* ───────────────────────── PHILOSOPHY (offset, not centred) ───────────────────────── */}
+                {/* ───────────────────────── PHILOSOPHY ───────────────────────── */}
                 <section className="py-20 md:py-28 bg-primary-800 text-white relative overflow-hidden">
                     <div className="absolute inset-0 paper-texture" />
                     <div className="absolute -top-40 -left-20 w-[40rem] h-[40rem] rounded-full bg-accent-600/15 blur-3xl" />
@@ -197,12 +295,12 @@ export default function HomePage() {
                                     <span className="text-[0.65rem] uppercase tracking-[0.35em] text-accent-200" style={{ fontWeight: 500 }}>The Way of Working</span>
                                 </div>
                                 <p className="text-3xl md:text-[2.6rem] font-display italic leading-[1.4] text-balance text-primary-50" style={{ fontWeight: 400 }}>
-                                    “A painting begins long before the brush — in <span className="text-accent-200 glow-gold">listening</span>:
-                                    to the sitter, to the silence, to the hour the light keeps changing its mind.”
+                                    "A painting begins long before the brush — in <span className="text-accent-200 glow-gold">listening</span>:
+                                    to the sitter, to the silence, to the hour the light keeps changing its mind."
                                 </p>
                                 <div className="hairline w-16 my-8 bg-white/20" />
                                 <p className="text-primary-200/80 max-w-xl leading-[1.9] font-light md:ml-auto md:text-right">
-                                    [Artist's philosophy to be added — the beliefs, rituals, and patience that shape
+                                    [Artist&apos;s philosophy to be added — the beliefs, rituals, and patience that shape
                                     each work, in her own words]
                                 </p>
                             </Reveal>
@@ -210,7 +308,7 @@ export default function HomePage() {
                     </div>
                 </section>
 
-                {/* ───────────────────────── SELECTED WORKS (asymmetric stagger) ───────────────────────── */}
+                {/* ───────────────────────── SELECTED WORKS ───────────────────────── */}
                 <section id="work" className="py-20 md:py-28 bg-white">
                     <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
                         <Reveal>
@@ -235,7 +333,7 @@ export default function HomePage() {
                     </div>
                 </section>
 
-                {/* ───────────────────────── COMMISSIONS (heading left, staggered cards) ───────────────────────── */}
+                {/* ───────────────────────── COMMISSIONS ───────────────────────── */}
                 <section id="commissions" className="py-20 md:py-28 bg-accent-50">
                     <div className="max-w-6xl mx-auto px-6 sm:px-8 lg:px-12">
                         <Reveal>
@@ -244,10 +342,10 @@ export default function HomePage() {
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-4xl">
                             {[
-                                { n: 'I', t: 'Portraits', d: 'The face held still long enough to reveal who lives behind it' },
-                                { n: 'II', t: 'Celebrations', d: 'Weddings, milestones, and the days a family wants to keep forever' },
-                                { n: 'III', t: 'Devotional', d: 'Sacred subjects rendered in the old symbols and the old patience' },
-                                { n: 'IV', t: 'Institutional', d: 'Large-format works that give a wall its voice' },
+                                { n: 'I',   t: 'Portraits',    d: 'The face held still long enough to reveal who lives behind it' },
+                                { n: 'II',  t: 'Celebrations', d: 'Weddings, milestones, and the days a family wants to keep forever' },
+                                { n: 'III', t: 'Devotional',   d: 'Sacred subjects rendered in the old symbols and the old patience' },
+                                { n: 'IV',  t: 'Institutional',d: 'Large-format works that give a wall its voice' },
                             ].map((c, i) => (
                                 <Reveal key={c.t} delay={i * 80}>
                                     <div className="bg-white p-8 h-full border border-primary-200/60 hover:border-accent-300 hover:shadow-luxe transition-all duration-500 ease-luxe group">
@@ -273,7 +371,7 @@ export default function HomePage() {
                         </Reveal>
 
                         <div className="divide-y divide-primary-200/70 border-y border-primary-200/70">
-                            {mockRecognition.map((item, i) => (
+                            {recognition.map((item, i) => (
                                 <Reveal key={item.id} delay={i * 40}>
                                     <div className="group flex flex-col md:flex-row md:items-center justify-between py-7 px-2 hover:px-6 hover:bg-primary-50/60 transition-all duration-500 ease-luxe">
                                         <div className="flex items-start gap-5 flex-grow mb-4 md:mb-0 md:pr-8">
@@ -294,7 +392,7 @@ export default function HomePage() {
                     </div>
                 </section>
 
-                {/* ───────────────────────── TESTIMONIALS (alternating sides) ───────────────────────── */}
+                {/* ───────────────────────── TESTIMONIALS ───────────────────────── */}
                 <section className="py-20 md:py-28 bg-primary-100">
                     <div className="max-w-5xl mx-auto px-6 sm:px-8 lg:px-12">
                         <Reveal>
@@ -302,10 +400,10 @@ export default function HomePage() {
                         </Reveal>
 
                         <div className="space-y-10">
-                            {mockTestimonials.map((t, i) => {
+                            {testimonials.map((t, i) => {
                                 const alignRight = i % 2 === 1
                                 return (
-                    <Reveal key={t.id} delay={i * 60} direction={alignRight ? 'right' : 'left'} className={alignRight ? 'lg:ml-auto lg:mr-0 lg:text-right' : 'lg:mr-auto'}>
+                                    <Reveal key={t.id} delay={i * 60} direction={alignRight ? 'right' : 'left'} className={alignRight ? 'lg:ml-auto lg:mr-0 lg:text-right' : 'lg:mr-auto'}>
                                         <figure className={`bg-white p-10 md:p-12 border border-primary-200/60 shadow-sm relative max-w-2xl ${alignRight ? 'lg:ml-auto' : ''}`}>
                                             <span className={`absolute top-6 text-6xl font-display text-accent-200 leading-none select-none ${alignRight ? 'right-8' : 'left-8'}`} aria-hidden="true">&ldquo;</span>
                                             <blockquote className="text-xl md:text-2xl font-serif italic text-neutral-700 leading-[1.6] mb-7 relative z-10 pt-4">{t.text}</blockquote>
@@ -324,7 +422,7 @@ export default function HomePage() {
                     </div>
                 </section>
 
-                {/* ───────────────────────── CONTACT (asymmetric 2/3) ───────────────────────── */}
+                {/* ───────────────────────── CONTACT ───────────────────────── */}
                 <section id="contact" className="py-20 md:py-28 bg-accent-700 text-white relative overflow-hidden">
                     <div className="absolute inset-0 paper-texture" />
                     <div className="absolute -bottom-40 -left-20 w-[36rem] h-[36rem] rounded-full bg-accent-600/30 blur-3xl" />

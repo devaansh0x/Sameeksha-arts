@@ -23,20 +23,28 @@ export default function CollectionsPage() {
     const [editSaving, setEditSaving] = useState(false)
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
     const [deleting, setDeleting] = useState(false)
+    const [error, setError] = useState<string | null>(null)
 
     async function handleCreate() {
         if (!newForm.name.trim()) return
         setSaving(true)
-        await new Promise(r => setTimeout(r, 700))
-        const slug = newForm.name.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
-        const newCol: AdminCollection = {
-            id: String(Date.now()), name: newForm.name, slug, description: newForm.description,
-            artworkCount: 0, createdAt: new Date().toISOString().split('T')[0], updatedAt: new Date().toISOString().split('T')[0],
+        setError(null)
+        try {
+            const res = await fetch('/api/admin/collection', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: newForm.name, description: newForm.description }),
+            })
+            const data = await res.json()
+            if (!data.success) { setError(data.error ?? 'An error occurred.'); setSaving(false); return }
+            setCollections(prev => [...prev, data.collection])
+            setNewForm({ name: '', description: '' })
+            setShowNewForm(false)
+        } catch {
+            setError('Network error. Please try again.')
+        } finally {
+            setSaving(false)
         }
-        setCollections(prev => [...prev, newCol])
-        setNewForm({ name: '', description: '' })
-        setShowNewForm(false)
-        setSaving(false)
     }
 
     function startEdit(col: AdminCollection) {
@@ -46,18 +54,38 @@ export default function CollectionsPage() {
 
     async function handleEditSave(id: string) {
         setEditSaving(true)
-        await new Promise(r => setTimeout(r, 700))
-        setCollections(prev => prev.map(c => c.id === id ? { ...c, name: editForm.name, description: editForm.description } : c))
-        setEditingId(null)
-        setEditSaving(false)
+        setError(null)
+        try {
+            const res = await fetch(`/api/admin/collection/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: editForm.name, description: editForm.description }),
+            })
+            const data = await res.json()
+            if (!data.success) { setError(data.error ?? 'An error occurred.'); setEditSaving(false); return }
+            setCollections(prev => prev.map(c => c.id === id ? { ...c, ...data.collection } : c))
+            setEditingId(null)
+        } catch {
+            setError('Network error. Please try again.')
+        } finally {
+            setEditSaving(false)
+        }
     }
 
     async function handleDelete(id: string) {
         setDeleting(true)
-        await new Promise(r => setTimeout(r, 600))
-        setCollections(prev => prev.filter(c => c.id !== id))
-        setConfirmDeleteId(null)
-        setDeleting(false)
+        setError(null)
+        try {
+            const res = await fetch(`/api/admin/collection/${id}`, { method: 'DELETE' })
+            const data = await res.json()
+            if (!data.success) { setError(data.error ?? 'An error occurred.'); setDeleting(false); return }
+            setCollections(prev => prev.filter(c => c.id !== id))
+            setConfirmDeleteId(null)
+        } catch {
+            setError('Network error. Please try again.')
+        } finally {
+            setDeleting(false)
+        }
     }
 
     const toDelete = collections.find(c => c.id === confirmDeleteId)
@@ -65,6 +93,12 @@ export default function CollectionsPage() {
     return (
         <AdminLayout breadcrumb={[{ label: 'Collections' }]} unreadCount={adminDashboardStats.unreadInquiryCount}>
             <div className="max-w-5xl space-y-6">
+                {error && (
+                    <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200">
+                        <svg className="w-4 h-4 text-red-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /></svg>
+                        <p className="text-xs text-red-700 font-light">{error}</p>
+                    </div>
+                )}
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-display text-neutral-900 tracking-tight" style={{ fontWeight: 500 }}>Collections</h1>

@@ -165,9 +165,49 @@ export async function POST() {
     );
 }
 
-export async function DELETE() {
-    return NextResponse.json(
-        { success: false, error: 'Method not allowed. Use PUT to update a testimonial.' },
-        { status: 405 }
-    );
+/**
+ * DELETE /api/admin/testimonial/[id]
+ * Delete a testimonial and compact the order sequence.
+ * Requirements: 16.6 — Task 10.3
+ */
+export async function DELETE(
+    _request: NextRequest,
+    { params }: { params: { id: string } }
+) {
+    try {
+        const session = await getSession();
+        if (!session || !session.user) {
+            return NextResponse.json(
+                { success: false, error: 'Unauthorized.' },
+                { status: 401 }
+            );
+        }
+
+        const { id } = params;
+
+        const existing = await prisma.testimonial.findUnique({ where: { id }, select: { id: true, order: true } });
+        if (!existing) {
+            return NextResponse.json(
+                { success: false, error: 'Testimonial not found.' },
+                { status: 404 }
+            );
+        }
+
+        await prisma.$transaction([
+            prisma.testimonial.delete({ where: { id } }),
+            // Compact: shift all higher-order testimonials down by 1
+            prisma.testimonial.updateMany({
+                where: { order: { gt: existing.order } },
+                data: { order: { decrement: 1 } },
+            }),
+        ]);
+
+        return NextResponse.json({ success: true, message: 'Testimonial deleted.' }, { status: 200 });
+    } catch (error) {
+        console.error('Error in DELETE /api/admin/testimonial/[id]:', error);
+        return NextResponse.json(
+            { success: false, error: 'An unexpected error occurred.' },
+            { status: 500 }
+        );
+    }
 }

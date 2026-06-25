@@ -62,11 +62,22 @@ export default function SettingsPage() {
         if (score < 2) { setPwError('Please choose a stronger password.'); return }
 
         setPwSaving(true)
-        await new Promise(r => setTimeout(r, 900))
-        setPwSaving(false)
-        setPwSaved(true)
-        setPwForm({ current: '', next: '', confirm: '' })
-        setTimeout(() => setPwSaved(false), 3000)
+        try {
+            const res = await fetch('/api/admin/password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ currentPassword: pwForm.current, newPassword: pwForm.next, confirmPassword: pwForm.confirm }),
+            })
+            const data = await res.json()
+            if (!data.success) { setPwError(data.error ?? 'An error occurred.'); setPwSaving(false); return }
+            setPwSaving(false)
+            setPwSaved(true)
+            setPwForm({ current: '', next: '', confirm: '' })
+            setTimeout(() => setPwSaved(false), 3000)
+        } catch {
+            setPwError('Network error. Please try again.')
+            setPwSaving(false)
+        }
     }
 
     return (

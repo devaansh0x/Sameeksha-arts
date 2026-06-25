@@ -43,25 +43,28 @@ export default function RecognitionPage() {
     const [editSaving, setEditSaving] = useState(false)
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
     const [deleting, setDeleting] = useState(false)
+    const [error, setError] = useState<string | null>(null)
 
     async function handleCreate() {
         if (!newForm.title.trim() || !newForm.date) return
         setSaving(true)
-        await new Promise(r => setTimeout(r, 700))
-        const entry: AdminRecognition = {
-            id: String(Date.now()),
-            title: newForm.title,
-            type: newForm.type,
-            date: newForm.date,
-            description: newForm.description,
-            published: false,
-            createdAt: new Date().toISOString().split('T')[0],
-            updatedAt: new Date().toISOString().split('T')[0],
+        setError(null)
+        try {
+            const res = await fetch('/api/admin/recognition', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title: newForm.title, type: newForm.type, date: newForm.date, description: newForm.description, published: false }),
+            })
+            const data = await res.json()
+            if (!data.success) { setError(data.error ?? 'An error occurred.'); setSaving(false); return }
+            setItems(prev => [data.recognition, ...prev])
+            setNewForm({ ...emptyForm })
+            setShowNewForm(false)
+        } catch {
+            setError('Network error. Please try again.')
+        } finally {
+            setSaving(false)
         }
-        setItems(prev => [entry, ...prev])
-        setNewForm({ ...emptyForm })
-        setShowNewForm(false)
-        setSaving(false)
     }
 
     function startEdit(item: AdminRecognition) {
@@ -71,22 +74,57 @@ export default function RecognitionPage() {
 
     async function handleEditSave(id: string) {
         setEditSaving(true)
-        await new Promise(r => setTimeout(r, 700))
-        setItems(prev => prev.map(i => i.id === id ? { ...i, ...editForm } : i))
-        setEditingId(null)
-        setEditSaving(false)
+        setError(null)
+        try {
+            const current = items.find(i => i.id === id)
+            const res = await fetch(`/api/admin/recognition/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...current, ...editForm }),
+            })
+            const data = await res.json()
+            if (!data.success) { setError(data.error ?? 'An error occurred.'); setEditSaving(false); return }
+            setItems(prev => prev.map(i => i.id === id ? { ...i, ...editForm } : i))
+            setEditingId(null)
+        } catch {
+            setError('Network error. Please try again.')
+        } finally {
+            setEditSaving(false)
+        }
     }
 
     async function togglePublished(id: string) {
-        setItems(prev => prev.map(i => i.id === id ? { ...i, published: !i.published } : i))
+        setError(null)
+        const current = items.find(i => i.id === id)
+        if (!current) return
+        try {
+            const res = await fetch(`/api/admin/recognition/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...current, published: !current.published }),
+            })
+            const data = await res.json()
+            if (!data.success) { setError(data.error ?? 'An error occurred.'); return }
+            setItems(prev => prev.map(i => i.id === id ? { ...i, published: !i.published } : i))
+        } catch {
+            setError('Network error. Please try again.')
+        }
     }
 
     async function handleDelete(id: string) {
         setDeleting(true)
-        await new Promise(r => setTimeout(r, 600))
-        setItems(prev => prev.filter(i => i.id !== id))
-        setConfirmDeleteId(null)
-        setDeleting(false)
+        setError(null)
+        try {
+            const res = await fetch(`/api/admin/recognition/${id}`, { method: 'DELETE' })
+            const data = await res.json()
+            if (!data.success) { setError(data.error ?? 'An error occurred.'); setDeleting(false); return }
+            setItems(prev => prev.filter(i => i.id !== id))
+            setConfirmDeleteId(null)
+        } catch {
+            setError('Network error. Please try again.')
+        } finally {
+            setDeleting(false)
+        }
     }
 
     const toDelete = items.find(i => i.id === confirmDeleteId)
@@ -94,6 +132,12 @@ export default function RecognitionPage() {
     return (
         <AdminLayout breadcrumb={[{ label: 'Recognition' }]} unreadCount={adminDashboardStats.unreadInquiryCount}>
             <div className="max-w-5xl space-y-6">
+                {error && (
+                    <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200">
+                        <svg className="w-4 h-4 text-red-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /></svg>
+                        <p className="text-xs text-red-700 font-light">{error}</p>
+                    </div>
+                )}
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-display text-neutral-900 tracking-tight" style={{ fontWeight: 500 }}>Recognition</h1>

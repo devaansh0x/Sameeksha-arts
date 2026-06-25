@@ -202,9 +202,48 @@ export async function POST() {
     );
 }
 
-export async function DELETE() {
-    return NextResponse.json(
-        { success: false, error: 'Method not allowed. Use PUT to update artwork.' },
-        { status: 405 }
-    );
+/**
+ * DELETE /api/admin/artwork/[id]
+ * Delete an artwork and all its image associations.
+ * Requirements: 10.6 — Task 7.3
+ */
+export async function DELETE(
+    _request: NextRequest,
+    { params }: { params: { id: string } }
+) {
+    try {
+        const session = await getSession();
+        if (!session || !session.user) {
+            return NextResponse.json(
+                { success: false, error: 'Unauthorized.' },
+                { status: 401 }
+            );
+        }
+
+        const { id } = params;
+
+        const existing = await prisma.artwork.findUnique({ where: { id }, select: { id: true, slug: true } });
+        if (!existing) {
+            return NextResponse.json(
+                { success: false, error: 'Artwork not found.' },
+                { status: 404 }
+            );
+        }
+
+        // ArtworkImage rows are cascade-deleted by the schema (onDelete: Cascade)
+        await prisma.artwork.delete({ where: { id } });
+
+        try {
+            revalidatePath('/');
+            revalidatePath('/work');
+        } catch { /* non-fatal */ }
+
+        return NextResponse.json({ success: true, message: 'Artwork deleted.' }, { status: 200 });
+    } catch (error) {
+        console.error('Error in DELETE /api/admin/artwork/[id]:', error);
+        return NextResponse.json(
+            { success: false, error: 'An unexpected error occurred.' },
+            { status: 500 }
+        );
+    }
 }

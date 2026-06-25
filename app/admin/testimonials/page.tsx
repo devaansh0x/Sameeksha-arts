@@ -25,25 +25,28 @@ export default function TestimonialsPage() {
     const [editSaving, setEditSaving] = useState(false)
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
     const [deleting, setDeleting] = useState(false)
+    const [error, setError] = useState<string | null>(null)
 
     async function handleCreate() {
         if (!newForm.clientName.trim() || !newForm.text.trim()) return
         setSaving(true)
-        await new Promise(r => setTimeout(r, 700))
-        const entry: AdminTestimonial = {
-            id: String(Date.now()),
-            clientName: newForm.clientName,
-            clientTitle: newForm.clientTitle || null,
-            text: newForm.text,
-            order: testimonials.length + 1,
-            published: false,
-            createdAt: new Date().toISOString().split('T')[0],
-            updatedAt: new Date().toISOString().split('T')[0],
+        setError(null)
+        try {
+            const res = await fetch('/api/admin/testimonial', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ clientName: newForm.clientName, clientTitle: newForm.clientTitle, text: newForm.text, published: false }),
+            })
+            const data = await res.json()
+            if (!data.success) { setError(data.error ?? 'An error occurred.'); setSaving(false); return }
+            setTestimonials(prev => [...prev, data.testimonial])
+            setNewForm({ ...emptyForm })
+            setShowNewForm(false)
+        } catch {
+            setError('Network error. Please try again.')
+        } finally {
+            setSaving(false)
         }
-        setTestimonials(prev => [...prev, entry])
-        setNewForm({ ...emptyForm })
-        setShowNewForm(false)
-        setSaving(false)
     }
 
     function startEdit(t: AdminTestimonial) {
@@ -53,27 +56,61 @@ export default function TestimonialsPage() {
 
     async function handleEditSave(id: string) {
         setEditSaving(true)
-        await new Promise(r => setTimeout(r, 700))
-        setTestimonials(prev => prev.map(t => t.id === id ? {
-            ...t,
-            clientName: editForm.clientName,
-            clientTitle: editForm.clientTitle || null,
-            text: editForm.text,
-        } : t))
-        setEditingId(null)
-        setEditSaving(false)
+        setError(null)
+        try {
+            const res = await fetch(`/api/admin/testimonial/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ clientName: editForm.clientName, clientTitle: editForm.clientTitle, text: editForm.text }),
+            })
+            const data = await res.json()
+            if (!data.success) { setError(data.error ?? 'An error occurred.'); setEditSaving(false); return }
+            setTestimonials(prev => prev.map(t => t.id === id ? {
+                ...t,
+                clientName: editForm.clientName,
+                clientTitle: editForm.clientTitle || null,
+                text: editForm.text,
+            } : t))
+            setEditingId(null)
+        } catch {
+            setError('Network error. Please try again.')
+        } finally {
+            setEditSaving(false)
+        }
     }
 
-    function togglePublished(id: string) {
-        setTestimonials(prev => prev.map(t => t.id === id ? { ...t, published: !t.published } : t))
+    async function togglePublished(id: string) {
+        setError(null)
+        const current = testimonials.find(t => t.id === id)
+        if (!current) return
+        try {
+            const res = await fetch(`/api/admin/testimonial/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ published: !current.published }),
+            })
+            const data = await res.json()
+            if (!data.success) { setError(data.error ?? 'An error occurred.'); return }
+            setTestimonials(prev => prev.map(t => t.id === id ? { ...t, published: !t.published } : t))
+        } catch {
+            setError('Network error. Please try again.')
+        }
     }
 
     async function handleDelete(id: string) {
         setDeleting(true)
-        await new Promise(r => setTimeout(r, 600))
-        setTestimonials(prev => prev.filter(t => t.id !== id))
-        setConfirmDeleteId(null)
-        setDeleting(false)
+        setError(null)
+        try {
+            const res = await fetch(`/api/admin/testimonial/${id}`, { method: 'DELETE' })
+            const data = await res.json()
+            if (!data.success) { setError(data.error ?? 'An error occurred.'); setDeleting(false); return }
+            setTestimonials(prev => prev.filter(t => t.id !== id))
+            setConfirmDeleteId(null)
+        } catch {
+            setError('Network error. Please try again.')
+        } finally {
+            setDeleting(false)
+        }
     }
 
     const toDelete = testimonials.find(t => t.id === confirmDeleteId)
@@ -81,6 +118,12 @@ export default function TestimonialsPage() {
     return (
         <AdminLayout breadcrumb={[{ label: 'Testimonials' }]} unreadCount={adminDashboardStats.unreadInquiryCount}>
             <div className="max-w-3xl space-y-6">
+                {error && (
+                    <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200">
+                        <svg className="w-4 h-4 text-red-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /></svg>
+                        <p className="text-xs text-red-700 font-light">{error}</p>
+                    </div>
+                )}
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-display text-neutral-900 tracking-tight" style={{ fontWeight: 500 }}>Testimonials</h1>

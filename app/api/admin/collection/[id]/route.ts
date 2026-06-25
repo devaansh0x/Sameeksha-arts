@@ -221,9 +221,54 @@ export async function POST() {
     );
 }
 
-export async function DELETE() {
-    return NextResponse.json(
-        { success: false, error: 'Method not allowed. Use PUT to update a collection.' },
-        { status: 405 }
-    );
+/**
+ * DELETE /api/admin/collection/[id]
+ * Delete a collection and unassign its artworks (set collectionId to null).
+ * Requirements: 12.6, 12.7 — Task 8.3
+ */
+export async function DELETE(
+    _request: NextRequest,
+    { params }: { params: { id: string } }
+) {
+    try {
+        const session = await getSession();
+        if (!session || !session.user) {
+            return NextResponse.json(
+                { success: false, error: 'Unauthorized.' },
+                { status: 401 }
+            );
+        }
+
+        const { id } = params;
+
+        const existing = await prisma.collection.findUnique({ where: { id }, select: { id: true } });
+        if (!existing) {
+            return NextResponse.json(
+                { success: false, error: 'Collection not found.' },
+                { status: 404 }
+            );
+        }
+
+        // Unassign artworks before deleting (schema uses onDelete: SetNull but
+        // we do it explicitly to return the count to the caller)
+        const { count } = await prisma.artwork.updateMany({
+            where: { collectionId: id },
+            data: { collectionId: null },
+        });
+
+        await prisma.collection.delete({ where: { id } });
+
+        try { revalidatePath('/work'); } catch { /* non-fatal */ }
+
+        return NextResponse.json(
+            { success: true, message: 'Collection deleted.', unassignedArtworks: count },
+            { status: 200 }
+        );
+    } catch (error) {
+        console.error('Error in DELETE /api/admin/collection/[id]:', error);
+        return NextResponse.json(
+            { success: false, error: 'An unexpected error occurred.' },
+            { status: 500 }
+        );
+    }
 }

@@ -4,13 +4,42 @@ import Footer from '@/components/Footer'
 import Button from '@/components/ui/Button'
 import Reveal from '@/components/common/Reveal'
 import { portraitSwatch, studioSwatch } from '@/lib/utils/mockData'
+import { getPageContent } from '@/lib/data/gallery'
+
+export const revalidate = 60
 
 export const metadata = {
     title: 'About | Sameeksha Arts',
     description: 'The story of Sameeksha — painter, Delhi studio, Madhubani lineage meets oil.',
 }
 
-export default function AboutPage() {
+export default async function AboutPage() {
+    // ── CMS content (optional override of placeholder text) ───────────────────
+    let biographyText: string | null = null
+    let philosophyText: string | null = null
+    let studioText: string | null = null
+
+    try {
+        const pageContent = await getPageContent('about')
+        if (pageContent && typeof pageContent === 'object') {
+            const content = pageContent as Record<string, unknown>
+            if (content.biography && typeof content.biography === 'object') {
+                const bio = content.biography as Record<string, unknown>
+                if (typeof bio.text === 'string') biographyText = bio.text
+            }
+            if (content.philosophy && typeof content.philosophy === 'object') {
+                const phil = content.philosophy as Record<string, unknown>
+                if (typeof phil.text === 'string') philosophyText = phil.text
+            }
+            if (content.studio && typeof content.studio === 'object') {
+                const studio = content.studio as Record<string, unknown>
+                if (typeof studio.text === 'string') studioText = studio.text
+            }
+        }
+    } catch {
+        // DB unavailable — use placeholder text silently
+    }
+
     return (
         <div className="min-h-screen flex flex-col bg-primary-50">
             <Navigation />
@@ -65,10 +94,18 @@ export default function AboutPage() {
                                         <span className="text-[0.65rem] uppercase tracking-[0.35em] text-accent-600" style={{ fontWeight: 500 }}>Biography</span>
                                     </div>
                                     <div className="space-y-6 text-neutral-600 leading-[1.9] font-light text-base max-w-xl">
-                                        <p>[Early life and background — where she grew up, early influences, and the formative experiences that shaped her worldview]</p>
-                                        <p>[Journey into art — what drew her to painting, early training, pivotal moments that defined her path]</p>
-                                        <p>[Artistic evolution — how the work has developed, key influences, the moments that shifted everything]</p>
-                                        <p>[Current practice — what drives the work today, the themes she returns to, what she hopes to give the people who live with it]</p>
+                                        {biographyText ? (
+                                            biographyText.split('\n').filter(Boolean).map((para, i) => (
+                                                <p key={i}>{para}</p>
+                                            ))
+                                        ) : (
+                                            <>
+                                                <p>[Early life and background — where she grew up, early influences, and the formative experiences that shaped her worldview]</p>
+                                                <p>[Journey into art — what drew her to painting, early training, pivotal moments that defined her path]</p>
+                                                <p>[Artistic evolution — how the work has developed, key influences, the moments that shifted everything]</p>
+                                                <p>[Current practice — what drives the work today, the themes she returns to, what she hopes to give the people who live with it]</p>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
 
@@ -100,9 +137,17 @@ export default function AboutPage() {
                                     <span className="italic">Making Art</span>
                                 </h2>
                                 <div className="space-y-5 text-primary-200/80 leading-[1.9] font-light max-w-xl">
-                                    <p>[Core philosophy — what she believes art should be, the values that guide the work]</p>
-                                    <p>[On process and patience — the creative practice, the importance of slowness]</p>
-                                    <p>[On tradition and invention — relationship to classical Indian forms and contemporary expression]</p>
+                                    {philosophyText ? (
+                                        philosophyText.split('\n').filter(Boolean).map((para, i) => (
+                                            <p key={i}>{para}</p>
+                                        ))
+                                    ) : (
+                                        <>
+                                            <p>[Core philosophy — what she believes art should be, the values that guide the work]</p>
+                                            <p>[On process and patience — the creative practice, the importance of slowness]</p>
+                                            <p>[On tradition and invention — relationship to classical Indian forms and contemporary expression]</p>
+                                        </>
+                                    )}
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mt-12 pt-10 border-t border-white/15">
@@ -139,9 +184,17 @@ export default function AboutPage() {
                                 </div>
 
                                 <div className="space-y-5 text-neutral-600 leading-[1.9] font-light text-base max-w-lg">
-                                    <p>[The studio — where it is, what it looks like, what makes it the right place to work]</p>
-                                    <p>[Daily practice — the rituals, the rhythm of a working day, how a painting begins and how it ends]</p>
-                                    <p>[Materials and tools — the mediums, the surfaces, the specific things she reaches for]</p>
+                                    {studioText ? (
+                                        studioText.split('\n').filter(Boolean).map((para, i) => (
+                                            <p key={i}>{para}</p>
+                                        ))
+                                    ) : (
+                                        <>
+                                            <p>[The studio — where it is, what it looks like, what makes it the right place to work]</p>
+                                            <p>[Daily practice — the rituals, the rhythm of a working day, how a painting begins and how it ends]</p>
+                                            <p>[Materials and tools — the mediums, the surfaces, the specific things she reaches for]</p>
+                                        </>
+                                    )}
                                 </div>
 
                                 <Button href="/work" variant="outline">See the results</Button>
@@ -173,11 +226,11 @@ export default function AboutPage() {
                                     <span className="text-[0.65rem] uppercase tracking-[0.35em] text-accent-200" style={{ fontWeight: 500 }}>Work Together</span>
                                 </div>
                                 <h2 className="text-3xl md:text-4xl font-display text-white leading-[1.1] tracking-tight mb-6" style={{ fontWeight: 400 }}>
-                                    Let's Create Something<br />
+                                    Let&apos;s Create Something<br />
                                     <span className="italic">Meaningful Together</span>
                                 </h2>
                                 <p className="text-accent-100/80 font-light leading-[1.9] mb-8 max-w-sm">
-                                    [Invitation — whether it's a commission, a purchase, or simply curiosity, the door is open]
+                                    [Invitation — whether it&apos;s a commission, a purchase, or simply curiosity, the door is open]
                                 </p>
                                 <div className="flex flex-wrap gap-4">
                                     <Button href="/commissions" variant="secondary">Commission a Work</Button>
