@@ -1,15 +1,30 @@
 /**
  * Prisma Client Singleton
  *
- * Prevents multiple PrismaClient instances in development due to hot-reloading.
- * In production a single instance is created and reused.
+ * Returns null when DATABASE_URL is not set so pages can fall back to
+ * mock data gracefully instead of crashing.
  */
 
 import { PrismaClient } from '@prisma/client';
 
-const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
+const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient | null };
 
-export const prisma = globalForPrisma.prisma ?? new PrismaClient();
+function createPrismaClient(): PrismaClient | null {
+    if (!process.env.DATABASE_URL) {
+        // No database configured — pages will use mock data
+        return null;
+    }
+    try {
+        return new PrismaClient();
+    } catch {
+        return null;
+    }
+}
+
+export const prisma: PrismaClient | null =
+    globalForPrisma.prisma !== undefined
+        ? globalForPrisma.prisma
+        : createPrismaClient();
 
 if (process.env.NODE_ENV !== 'production') {
     globalForPrisma.prisma = prisma;

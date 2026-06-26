@@ -3,6 +3,7 @@ import { Inter, Cormorant_Garamond, Playfair_Display } from 'next/font/google'
 import './globals.css'
 import { Providers } from './providers'
 import ScrollProgress from '@/components/common/ScrollProgress'
+import PageTransition from '@/components/common/PageTransition'
 
 const inter = Inter({
     subsets: ['latin'],
@@ -52,7 +53,11 @@ export default function RootLayout({
             </head>
             <body className="font-sans">
                 <ScrollProgress />
-                <Providers>{children}</Providers>
+                <Providers>
+                    <PageTransition>
+                        {children}
+                    </PageTransition>
+                </Providers>
             </body>
         </html>
     )

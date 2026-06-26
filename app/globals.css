@@ -190,7 +190,21 @@
   }
 }
 
-/* Site-wide scroll progress bar */
+/* ───────────────────────── PAGE & ELEMENT TRANSITIONS ───────────────────── */
+
+/* Mobile nav drawer — slide down from above */
+@keyframes slide-down {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.animate-slide-down {
+    animation: slide-down 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Override the existing fade-in for the mobile menu to use slide-down */
+.animate-fade-in {
+    animation: slide-down 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
 .scroll-progress {
   position: fixed;
   top: 0;

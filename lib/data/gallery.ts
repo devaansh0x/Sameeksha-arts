@@ -1,8 +1,7 @@
 /**
  * Server-side data fetching for public gallery pages.
- * These functions query the database via Prisma.
- * Each falls back gracefully — if the DB isn't connected, the public site
- * continues to work with the mock data from lib/utils/mockData.ts.
+ * All functions return empty arrays / null when the DB is not configured,
+ * allowing every page to fall back to mock data silently.
  */
 
 import prisma from '@/lib/database/prisma'
@@ -10,6 +9,7 @@ import prisma from '@/lib/database/prisma'
 // ─── Artworks ────────────────────────────────────────────────────────────────
 
 export async function getAllPublishedArtworks() {
+    if (!prisma) return []
     return prisma.artwork.findMany({
         where: { published: true },
         orderBy: { createdAt: 'desc' },
@@ -24,6 +24,7 @@ export async function getAllPublishedArtworks() {
 }
 
 export async function getArtworkBySlug(slug: string) {
+    if (!prisma) return null
     return prisma.artwork.findFirst({
         where: { slug, published: true },
         include: {
@@ -37,6 +38,7 @@ export async function getArtworkBySlug(slug: string) {
 }
 
 export async function getRelatedArtworks(collectionId: string, excludeId: string) {
+    if (!prisma) return []
     return prisma.artwork.findMany({
         where: { collectionId, published: true, id: { not: excludeId } },
         take: 3,
@@ -53,6 +55,7 @@ export async function getRelatedArtworks(collectionId: string, excludeId: string
 }
 
 export async function getAllArtworkSlugs() {
+    if (!prisma) return []
     const artworks = await prisma.artwork.findMany({
         where: { published: true },
         select: { slug: true },
@@ -63,6 +66,7 @@ export async function getAllArtworkSlugs() {
 // ─── Collections ─────────────────────────────────────────────────────────────
 
 export async function getAllCollections() {
+    if (!prisma) return []
     return prisma.collection.findMany({
         orderBy: { name: 'asc' },
         include: { _count: { select: { artworks: true } } },
@@ -72,6 +76,7 @@ export async function getAllCollections() {
 // ─── Recognition ─────────────────────────────────────────────────────────────
 
 export async function getAllPublishedRecognition() {
+    if (!prisma) return []
     return prisma.recognition.findMany({
         where: { published: true },
         orderBy: { date: 'desc' },
@@ -81,6 +86,7 @@ export async function getAllPublishedRecognition() {
 // ─── Testimonials ─────────────────────────────────────────────────────────────
 
 export async function getAllPublishedTestimonials() {
+    if (!prisma) return []
     return prisma.testimonial.findMany({
         where: { published: true },
         orderBy: { order: 'asc' },
@@ -90,6 +96,7 @@ export async function getAllPublishedTestimonials() {
 // ─── Page content ─────────────────────────────────────────────────────────────
 
 export async function getPageContent(page: 'homepage' | 'about' | 'commissions') {
+    if (!prisma) return null
     const record = await prisma.pageContent.findUnique({ where: { page } })
     return record?.content ?? null
 }

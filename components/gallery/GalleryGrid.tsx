@@ -63,7 +63,7 @@ function FilterGroup({
                             <button
                                 key={tag}
                                 onClick={() => onToggle(tag)}
-                                className={`w-full text-left px-3 py-2 text-sm font-light transition-all duration-200 flex items-center justify-between group/tag ${
+                                className={`w-full text-left px-3 py-2 text-sm font-light transition-all duration-300 ease-luxe flex items-center justify-between ${
                                     active
                                         ? 'bg-accent-700 text-white'
                                         : 'text-neutral-600 hover:text-neutral-900 hover:bg-primary-100'
@@ -108,19 +108,37 @@ export default function GalleryGrid({ artworks, collections }: GalleryGridProps)
     const [activeTags, setActiveTags] = useState<Set<string>>(new Set())
     const [sort, setSort] = useState<SortKey>('newest')
     const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
+    // Grid fade — briefly hide grid on filter change so items re-enter smoothly
+    const [gridVisible, setGridVisible] = useState(true)
+
+    const applyFilter = useCallback((fn: () => void) => {
+        setGridVisible(false)
+        setTimeout(() => {
+            fn()
+            setGridVisible(true)
+        }, 220)
+    }, [])
 
     const toggleTag = useCallback((tag: string) => {
-        setActiveTags(prev => {
-            const next = new Set(prev)
-            next.has(tag) ? next.delete(tag) : next.add(tag)
-            return next
+        applyFilter(() => {
+            setActiveTags(prev => {
+                const next = new Set(prev)
+                next.has(tag) ? next.delete(tag) : next.add(tag)
+                return next
+            })
         })
-    }, [])
+    }, [applyFilter])
+
+    const handleSetCollection = useCallback((id: string) => {
+        applyFilter(() => setActiveCollection(id))
+    }, [applyFilter])
 
     const clearAll = useCallback(() => {
-        setActiveCollection('all')
-        setActiveTags(new Set())
-    }, [])
+        applyFilter(() => {
+            setActiveCollection('all')
+            setActiveTags(new Set())
+        })
+    }, [applyFilter])
 
     const filtered = useMemo(() => {
         let result = artworks
@@ -160,15 +178,15 @@ export default function GalleryGrid({ artworks, collections }: GalleryGridProps)
                 </p>
                 <div className="space-y-0.5">
                     <button
-                        onClick={() => setActiveCollection('all')}
-                        className={`w-full text-left px-3 py-2.5 text-sm font-light transition-all flex items-center justify-between ${
+                        onClick={() => handleSetCollection('all')}
+                        className={`w-full text-left px-3 py-2.5 text-sm font-light transition-all duration-300 ease-luxe flex items-center justify-between ${
                             activeCollection === 'all'
                                 ? 'bg-accent-700 text-white border-l-2 border-accent-700 pl-[10px]'
                                 : 'text-neutral-600 hover:text-neutral-900 border-l-2 border-transparent hover:border-primary-300 hover:pl-[10px]'
                         }`}
                     >
                         <span>All Works</span>
-                        <span className={`text-xs tabular-nums ${activeCollection === 'all' ? 'text-white/70' : 'text-neutral-400'}`}>{artworks.length}</span>
+                        <span className={`text-xs tabular-nums transition-colors duration-300 ${activeCollection === 'all' ? 'text-white/70' : 'text-neutral-400'}`}>{artworks.length}</span>
                     </button>
                     {collections.map(col => {
                         const count = artworks.filter(a => a.collectionId === col.id).length
@@ -176,15 +194,15 @@ export default function GalleryGrid({ artworks, collections }: GalleryGridProps)
                         return (
                             <button
                                 key={col.id}
-                                onClick={() => setActiveCollection(col.id)}
-                                className={`w-full text-left px-3 py-2.5 text-sm font-light transition-all flex items-center justify-between ${
+                                onClick={() => handleSetCollection(col.id)}
+                                className={`w-full text-left px-3 py-2.5 text-sm font-light transition-all duration-300 ease-luxe flex items-center justify-between ${
                                     isActive
                                         ? 'bg-accent-700 text-white border-l-2 border-accent-700 pl-[10px]'
                                         : 'text-neutral-600 hover:text-neutral-900 border-l-2 border-transparent hover:border-primary-300 hover:pl-[10px]'
                                 }`}
                             >
                                 <span>{col.name}</span>
-                                <span className={`text-xs tabular-nums ${isActive ? 'text-white/70' : 'text-neutral-400'}`}>{count}</span>
+                                <span className={`text-xs tabular-nums transition-colors duration-300 ${isActive ? 'text-white/70' : 'text-neutral-400'}`}>{count}</span>
                             </button>
                         )
                     })}
@@ -279,7 +297,7 @@ export default function GalleryGrid({ artworks, collections }: GalleryGridProps)
                                 {activeCollection !== 'all' && (
                                     <FilterChip
                                         label={activeCollection_obj?.name ?? ''}
-                                        onRemove={() => setActiveCollection('all')}
+                                        onRemove={() => handleSetCollection('all')}
                                     />
                                 )}
                                 {[...activeTags].map(tag => (
@@ -288,7 +306,7 @@ export default function GalleryGrid({ artworks, collections }: GalleryGridProps)
                                 {hasFilters && (
                                     <button
                                         onClick={clearAll}
-                                        className="text-xs text-neutral-400 hover:text-neutral-700 font-light underline underline-offset-2 transition-colors"
+                                        className="text-xs text-neutral-400 hover:text-neutral-700 font-light underline underline-offset-2 transition-colors duration-300"
                                     >
                                         Clear all
                                     </button>
@@ -320,7 +338,13 @@ export default function GalleryGrid({ artworks, collections }: GalleryGridProps)
                             </div>
                         )}
 
-                        {/* Grid */}
+                        {/* Grid — fades out briefly on filter change, then fades back in */}
+                        <div
+                            style={{
+                                opacity: gridVisible ? 1 : 0,
+                                transition: 'opacity 0.22s cubic-bezier(0.4, 0, 0.2, 1)',
+                            }}
+                        >
                         {filtered.length > 0 ? (
                             <div className="columns-1 sm:columns-2 xl:columns-3 gap-6 space-y-6">
                                 {filtered.map((artwork, i) => (
@@ -352,6 +376,7 @@ export default function GalleryGrid({ artworks, collections }: GalleryGridProps)
                                 </div>
                             </Reveal>
                         )}
+                        </div>
                     </div>
                 </div>
             </div>

@@ -71,7 +71,7 @@ export default function Navigation() {
                                 <Link
                                     key={link.href}
                                     href={link.href}
-                                    className={`text-[0.72rem] uppercase tracking-[0.22em] transition-all duration-300 relative group ${
+                                    className={`text-[0.72rem] uppercase tracking-[0.22em] transition-all duration-500 ease-luxe relative group ${
                                         transparent
                                             ? 'text-white/80 hover:text-white'
                                             : active

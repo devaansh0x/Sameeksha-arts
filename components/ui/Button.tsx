@@ -22,7 +22,7 @@ export default function Button({
     disabled = false,
     className = '',
 }: ButtonProps) {
-    const baseStyles = 'inline-flex items-center justify-center font-medium transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed tracking-wide group'
+    const baseStyles = 'inline-flex items-center justify-center font-medium transition-all duration-500 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed tracking-wide group'
 
     const variantStyles = {
         primary: 'bg-accent-700 text-white hover:bg-accent-800 hover:shadow-lg hover:shadow-accent-700/25 focus:ring-accent-500 hover:-translate-y-0.5',
