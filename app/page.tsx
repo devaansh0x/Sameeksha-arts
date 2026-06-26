@@ -165,7 +165,7 @@ export default async function HomePage() {
 
             <main className="flex-grow">
                 {/* ───────────────────────── HERO ───────────────────────── */}
-                <section id="home" className="relative h-screen min-h-[660px] flex items-center overflow-hidden">
+                <section id="home" className="relative h-screen min-h-[700px] flex items-end pb-24 md:items-center md:pb-0 overflow-hidden">
                     <div className="absolute inset-0">
                         <div
                             className="absolute inset-0 animate-kenburns"
@@ -189,8 +189,8 @@ export default async function HomePage() {
                         </div>
                     </div>
 
-                    {/* Content — pushed off-centre to the left */}
-                    <div className="relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
+                    {/* Content — clear of the fixed nav (pt-24 = 96px nav height + breathing room) */}
+                    <div className="relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 pt-24 md:pt-0">
                         <div className="max-w-3xl lg:ml-4">
                             <div className="flex items-center gap-4 mb-10 animate-fade-up">
                                 <span className="h-px w-10 bg-white/50" />
@@ -203,10 +203,10 @@ export default async function HomePage() {
                                 {heroSubheading}
                             </p>
                             <div className="flex flex-wrap gap-4 animate-fade-up md:ml-10" style={{ animationDelay: '440ms' }}>
-                                <Button href="#work" size="lg" variant="primary">Explore the work</Button>
-                                <a href="#commissions" className="inline-flex items-center justify-center px-10 py-4 text-base font-light border border-white/40 text-white rounded-xl hover:bg-white/10 hover:border-white transition-all duration-500 backdrop-blur-sm tracking-wide">
+                                <Button href="/work" size="lg" variant="primary">Explore the work</Button>
+                                <Button href="/commissions" size="lg" variant="ghost" className="border border-white/40 text-white hover:bg-white/10 hover:border-white backdrop-blur-sm rounded-xl">
                                     Commission a painting
-                                </a>
+                                </Button>
                             </div>
                         </div>
                     </div>
@@ -261,7 +261,7 @@ export default async function HomePage() {
                                 </div>
 
                                 <div className="pt-2">
-                                    <Button href="#work" variant="outline">See the work</Button>
+                                    <Button href="/work" variant="outline">See the work</Button>
                                 </div>
 
                                 {/* Stats */}
@@ -328,7 +328,7 @@ export default async function HomePage() {
                         </div>
 
                         <Reveal className="text-right mt-10 lg:mr-[8%]">
-                            <Button href="#contact" variant="primary" size="lg">Enquire About a Piece</Button>
+                            <Button href="/contact" variant="primary" size="lg">Enquire About a Piece</Button>
                         </Reveal>
                     </div>
                 </section>
@@ -358,7 +358,7 @@ export default async function HomePage() {
                         </div>
 
                         <Reveal className="mt-10 lg:ml-[40%]">
-                            <Button href="#contact" variant="primary" size="lg">Begin the Conversation</Button>
+                            <Button href="/contact" variant="primary" size="lg">Begin the Conversation</Button>
                         </Reveal>
                     </div>
                 </section>
