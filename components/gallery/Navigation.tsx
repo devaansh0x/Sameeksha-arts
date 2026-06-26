@@ -130,7 +130,7 @@ export default function Navigation() {
                                     onClick={() => setMobileMenuOpen(false)}
                                     className={`block px-5 py-3.5 text-sm uppercase tracking-[0.22em] transition-all rounded-lg ${
                                         active
-                                            ? 'text-accent-700 bg-accent-50'
+                                            ? 'text-white bg-accent-700'
                                             : 'text-neutral-600 hover:text-neutral-900 hover:bg-primary-100'
                                     }`}
                                     style={{ fontWeight: active ? 500 : 400 }}

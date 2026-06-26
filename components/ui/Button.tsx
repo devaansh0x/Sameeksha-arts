@@ -27,7 +27,7 @@ export default function Button({
     const variantStyles = {
         primary: 'bg-accent-700 text-white hover:bg-accent-800 hover:shadow-lg hover:shadow-accent-700/25 focus:ring-accent-500 hover:-translate-y-0.5',
         secondary: 'bg-white text-accent-700 hover:bg-primary-50 hover:shadow-lg focus:ring-accent-500 hover:-translate-y-0.5',
-        outline: 'border border-neutral-300 text-neutral-900 hover:border-accent-600 hover:text-accent-700 hover:bg-accent-50/50 focus:ring-accent-500 backdrop-blur-sm',
+        outline: 'border border-neutral-300 text-neutral-900 hover:border-accent-600 hover:text-neutral-900 hover:bg-accent-100 focus:ring-accent-500 backdrop-blur-sm',
         ghost: 'text-neutral-700 hover:text-accent-700 hover:bg-accent-50/50 focus:ring-accent-500',
     }
 

@@ -163,27 +163,28 @@ export default function GalleryGrid({ artworks, collections }: GalleryGridProps)
                         onClick={() => setActiveCollection('all')}
                         className={`w-full text-left px-3 py-2.5 text-sm font-light transition-all flex items-center justify-between ${
                             activeCollection === 'all'
-                                ? 'text-accent-700 border-l-2 border-accent-700 bg-accent-50/50 pl-[10px]'
+                                ? 'bg-accent-700 text-white border-l-2 border-accent-700 pl-[10px]'
                                 : 'text-neutral-600 hover:text-neutral-900 border-l-2 border-transparent hover:border-primary-300 hover:pl-[10px]'
                         }`}
                     >
                         <span>All Works</span>
-                        <span className="text-neutral-400 text-xs tabular-nums">{artworks.length}</span>
+                        <span className={`text-xs tabular-nums ${activeCollection === 'all' ? 'text-white/70' : 'text-neutral-400'}`}>{artworks.length}</span>
                     </button>
                     {collections.map(col => {
                         const count = artworks.filter(a => a.collectionId === col.id).length
+                        const isActive = activeCollection === col.id
                         return (
                             <button
                                 key={col.id}
                                 onClick={() => setActiveCollection(col.id)}
                                 className={`w-full text-left px-3 py-2.5 text-sm font-light transition-all flex items-center justify-between ${
-                                    activeCollection === col.id
-                                        ? 'text-accent-700 border-l-2 border-accent-700 bg-accent-50/50 pl-[10px]'
+                                    isActive
+                                        ? 'bg-accent-700 text-white border-l-2 border-accent-700 pl-[10px]'
                                         : 'text-neutral-600 hover:text-neutral-900 border-l-2 border-transparent hover:border-primary-300 hover:pl-[10px]'
                                 }`}
                             >
                                 <span>{col.name}</span>
-                                <span className="text-neutral-400 text-xs tabular-nums">{count}</span>
+                                <span className={`text-xs tabular-nums ${isActive ? 'text-white/70' : 'text-neutral-400'}`}>{count}</span>
                             </button>
                         )
                     })}
