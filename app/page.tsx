@@ -1,4 +1,5 @@
 import React from 'react'
+import type { Metadata } from 'next'
 import Navigation from '@/components/gallery/Navigation'
 import Footer from '@/components/Footer'
 import ArtworkCard from '@/components/gallery/ArtworkCard'
@@ -15,6 +16,22 @@ import { mockArtworks, mockRecognition, mockTestimonials } from '@/lib/utils/moc
 import type { Artwork, Recognition, Testimonial } from '@/lib/utils/mockData'
 
 export const revalidate = 60
+
+export const metadata: Metadata = {
+    title: 'Sameeksha Arts | Contemporary Indian Artist',
+    description: 'Paintings in oil, watercolour, and traditional Madhubani forms — portraits, landscapes, and commissions from a Delhi studio.',
+    openGraph: {
+        title: 'Sameeksha Arts',
+        description: 'Contemporary Indian artist — oil paintings, portraits, Madhubani, and commissions from Delhi.',
+        type: 'website',
+        url: 'https://sameeksha-arts.vercel.app',
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title: 'Sameeksha Arts',
+        description: 'Contemporary Indian artist — oil paintings, portraits, Madhubani, and commissions.',
+    },
+}
 
 /** Normalise a DB Artwork row to the shape ArtworkCard expects. */
 function normaliseArtwork(a: Awaited<ReturnType<typeof getAllPublishedArtworks>>[number]): Artwork {
@@ -124,7 +141,7 @@ export default async function HomePage() {
         <>
             Where pigment
             <br />
-            <span className="italic text-gold glow-gold animate-glow ml-10 md:ml-20">remembers</span>
+            <span className="italic text-gold glow-gold animate-glow ml-4 md:ml-20">remembers</span>
             <br />
             <span className="italic font-light">what words forget</span>
         </>
@@ -164,8 +181,20 @@ export default async function HomePage() {
             <Navigation />
 
             <main className="flex-grow">
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{ __html: JSON.stringify({
+                        '@context': 'https://schema.org',
+                        '@type': 'Person',
+                        name: 'Sameeksha',
+                        jobTitle: 'Artist',
+                        description: 'Contemporary Indian artist working in oil, watercolour, and traditional Madhubani forms.',
+                        url: 'https://sameeksha-arts.vercel.app',
+                        address: { '@type': 'PostalAddress', addressLocality: 'Delhi', addressCountry: 'IN' },
+                    }) }}
+                />
                 {/* ───────────────────────── HERO ───────────────────────── */}
-                <section id="home" className="relative h-screen min-h-[700px] flex items-end pb-24 md:items-center md:pb-0 overflow-hidden">
+                <section id="home" className="relative h-screen min-h-[600px] flex items-center overflow-hidden">
                     <div className="absolute inset-0">
                         <div
                             className="absolute inset-0 animate-kenburns"
@@ -192,14 +221,14 @@ export default async function HomePage() {
                     {/* Content — clear of the fixed nav (pt-24 = 96px nav height + breathing room) */}
                     <div className="relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 pt-24 md:pt-0">
                         <div className="max-w-3xl lg:ml-4">
-                            <div className="flex items-center gap-4 mb-10 animate-fade-up">
+                            <div className="flex items-center gap-4 mb-6 md:mb-10 animate-fade-up">
                                 <span className="h-px w-10 bg-white/50" />
                                 <span className="text-[0.65rem] uppercase tracking-[0.4em] text-white/75 letterpress" style={{ fontWeight: 500 }}>Paintings &amp; Commissions</span>
                             </div>
-                            <h1 className="text-5xl md:text-7xl lg:text-[5.75rem] font-display text-white mb-10 leading-[1.02] tracking-[-0.01em] letterpress animate-fade-up" style={{ fontWeight: 400, animationDelay: '120ms' }}>
+                            <h1 className="text-[2.6rem] sm:text-5xl md:text-7xl lg:text-[5.75rem] font-display text-white mb-6 md:mb-10 leading-[1.02] tracking-[-0.01em] letterpress animate-fade-up" style={{ fontWeight: 400, animationDelay: '120ms' }}>
                                 {heroHeading}
                             </h1>
-                            <p className="text-lg md:text-xl text-white/80 max-w-xl font-serif leading-[1.7] mb-12 animate-fade-up md:ml-10" style={{ fontWeight: 300, animationDelay: '300ms' }}>
+                            <p className="text-lg md:text-xl text-white/80 max-w-xl font-serif leading-[1.7] mb-8 md:mb-12 animate-fade-up md:ml-10" style={{ fontWeight: 300, animationDelay: '300ms' }}>
                                 {heroSubheading}
                             </p>
                             <div className="flex flex-wrap gap-4 animate-fade-up md:ml-10" style={{ animationDelay: '440ms' }}>
