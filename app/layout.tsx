@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter, Cormorant_Garamond, Playfair_Display } from 'next/font/google'
 import './globals.css'
 import { Providers } from './providers'
@@ -40,6 +40,12 @@ export const metadata: Metadata = {
     },
 }
 
+export const viewport: Viewport = {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 5,
+}
+
 export default function RootLayout({
     children,
 }: {
@@ -49,6 +55,7 @@ export default function RootLayout({
     return (
         <html lang="en" className={`${inter.variable} ${cormorantGaramond.variable} ${playfairDisplay.variable} scroll-smooth`} suppressHydrationWarning>
             <head>
+                <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
                 <script dangerouslySetInnerHTML={{ __html: themeScript }} />
             </head>
             <body className="font-sans">
