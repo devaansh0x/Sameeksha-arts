@@ -12,10 +12,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { processAndUploadImage } from '@/lib/media/imageUploadHelper';
-import { validateImageFile, MAX_FILE_SIZE, ALLOWED_MIME_TYPES } from '@/lib/cloudinary';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { validateImageFile } from '@/lib/cloudinary';
+import prisma from '@/lib/database/prisma';
 
 /**
  * POST /api/admin/media/upload
@@ -118,20 +116,22 @@ export async function POST(request: NextRequest) {
         } | null = null;
 
         try {
-            mediaAsset = await prisma.mediaAsset.create({
-                data: {
-                    filename: file.name,
-                    originalUrl: uploadResult.urls.jpeg.original,
-                    thumbnailUrl: uploadResult.urls.jpeg.thumbnail,
-                    smallUrl: uploadResult.urls.jpeg.small,
-                    mediumUrl: uploadResult.urls.jpeg.medium,
-                    largeUrl: uploadResult.urls.jpeg.large,
-                    width: uploadResult.metadata.width,
-                    height: uploadResult.metadata.height,
-                    size: file.size,
-                    mimeType: file.type,
-                },
-            });
+            if (prisma) {
+                mediaAsset = await prisma.mediaAsset.create({
+                    data: {
+                        filename: file.name,
+                        originalUrl: uploadResult.urls.jpeg.original,
+                        thumbnailUrl: uploadResult.urls.jpeg.thumbnail,
+                        smallUrl: uploadResult.urls.jpeg.small,
+                        mediumUrl: uploadResult.urls.jpeg.medium,
+                        largeUrl: uploadResult.urls.jpeg.large,
+                        width: uploadResult.metadata.width,
+                        height: uploadResult.metadata.height,
+                        size: file.size,
+                        mimeType: file.type,
+                    },
+                });
+            }
         } catch (dbError) {
             // Log DB error but continue — the file is already uploaded to Cloudinary
             console.error('Failed to save MediaAsset to database (DB may be unavailable):', dbError);
@@ -206,8 +206,8 @@ export async function POST(request: NextRequest) {
             { status: 500 }
         );
     } finally {
-        // Ensure Prisma client is disconnected
-        await prisma.$disconnect();
+        // Ensure Prisma client connection is released
+        // (singleton manages its own lifecycle — no manual disconnect needed)
     }
 }
 
